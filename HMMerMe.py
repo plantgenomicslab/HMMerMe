@@ -23,6 +23,14 @@ os.makedirs(conflicted_output_dir, exist_ok=True)
 os.makedirs(processed_input_dir, exist_ok=True)
 os.makedirs(database_hmm_dir, exist_ok=True)
 
+
+# Define the path to the output MSA file
+msa_output_file = 'Nailed_it/msa_output.fasta'
+
+# Create a list to store the sequences for MSA
+msa_sequences = []
+
+
 # Function to remove special characters and shorten FASTA headers
 def clean_sequence_header(header):
     # Remove special characters from the header
@@ -121,6 +129,18 @@ subprocess.run(['sed', '-i', 's,./Nailed_it/conflicted_HMMer_output/,,g; s,__,\t
 
 subprocess.run(['grep', '-c', '>', './Nailed_it/*_no_conflicts.fasta', '>', './Nailed_it/00_Number_of_predicted_genes_without_conflicts.txt'], shell=True, check=True)
 subprocess.run(['sed', '-i', 's,./Nailed_it/,,g; s,__,\t,g; s,_no_conflicts.fasta:,\t,g', './Nailed_it/00_Number_of_predicted_genes_without_conflicts.txt'], shell=True, check=True)
+
+# Add the sequences to the list for MSA
+for record in SeqIO.parse(f'./Nailed_it/{species}_no_conflicts.fasta', 'fasta'):
+    msa_sequences.append(record)
+
+# Perform multiple sequence alignment using Muscle
+run_muscle(msa_sequences, msa_output_file)
+
+# Visualize the MSA using pyMSAviz
+msa = MSAMultiple(msa_output_file)
+msa.create_visualization()
+
 
 print("--------------------------------------------------------------")
 print(" ")
