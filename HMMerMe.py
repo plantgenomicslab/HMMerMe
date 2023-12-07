@@ -3,6 +3,8 @@
 import os
 import subprocess
 from Bio import SeqIO
+from muscle import run_muscle
+from pyMSAviz import MSAMultiple
 
 # Set umask
 os.umask(0o007)
