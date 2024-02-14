@@ -2,7 +2,7 @@
 
 ### Environment creation
 ```bash
-conda create -y -n GPCR -c bioconda -c conda-forge   python=3.11 seqkit hmmer muscle=3.8.1551 weblogo transdecoder easel diamond 
+conda create -y -n GPCR -c bioconda -c conda-forge   python=3.11 seqkit hmmer muscle=3.8.1551 weblogo transdecoder easel diamond trimal
 conda activate GPCR
 
 #wget https://github.com/fteufel/signalp-6.0/archive/refs/heads/main.zip -O SignalP6.zip
