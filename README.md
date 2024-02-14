@@ -2,9 +2,13 @@
 
 ### Environment creation
 ```bash
-conda create -y -n GPCR -c bioconda -c conda-forge   python=3.11 seqkit hmmer muscle=3.8.1551 weblogo transdecoder  blast
+conda create -y -n GPCR -c bioconda -c conda-forge   python=3.11 seqkit hmmer muscle=3.8.1551 weblogo transdecoder easel diamond 
 conda activate GPCR
-conda install -c predector signalp6
+
+#wget https://github.com/fteufel/signalp-6.0/archive/refs/heads/main.zip -O SignalP6.zip
+#unzip SignalP6.zip
+#pip install signalp-6.0-main
+
 git clone git@github.com:plantgenomicslab/HMMerMe.git
 cd HMMerMe
 ```
