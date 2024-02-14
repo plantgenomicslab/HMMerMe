@@ -2,8 +2,9 @@
 
 ### Environment creation
 ```bash
-conda create -y -n GPCR -c bioconda -c conda-forge -c predector  python=3.11 seqkit hmmer muscle=3.8.1551 weblogo transdecoder signalp6
+conda create -y -n GPCR -c bioconda -c conda-forge   python=3.11 seqkit hmmer muscle=3.8.1551 weblogo transdecoder  blast
 conda activate GPCR
+conda install -c predector signalp6
 git clone git@github.com:plantgenomicslab/HMMerMe.git
 cd HMMerMe
 ```
