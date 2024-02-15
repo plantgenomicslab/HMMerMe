@@ -104,14 +104,12 @@ def domain_files(directory, output_file, output_dir):
                         # Create Key, Value pairs for 'list_file_dict'
                         if domain_name not in list_file_dict:
                             list_file_dict[domain_name] = []
-                        else:
-                            list_file_dict[domain_name].append(f'{id}')
+                        list_file_dict[domain_name].append(f'{id}')
                         
                         # Create Key, Value pairs for 'bed_file_dict'
                         if domain_name not in bed_file_dict:
                             bed_file_dict[domain_name] = []
-                        else:
-                            bed_file_dict[domain_name].append(f'{id}\t{int(ali_from) - 1}\t{ali_to}')
+                        bed_file_dict[domain_name].append(f'{id}\t{int(ali_from) - 1}\t{ali_to}')
 
                         # Create Key, Value pairs for '_Conflict.list'
                         if id not in conflict_list_dict:
@@ -123,6 +121,7 @@ def domain_files(directory, output_file, output_dir):
                             conflict_bed_dict[id] = []
                         #conflict_bed_dict[id].append(f'{domain_name}\t{int(ali_from) - 1}\t{ali_to}')
                         conflict_bed_dict[id].append(f'{id}\t{int(ali_from) - 1}\t{ali_to}')
+                        
                         # Create a Key Value pairs for table file
                         speciesname = os.path.splitext(filename)[0]
                         if speciesname not in species_count_dict:
