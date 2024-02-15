@@ -121,8 +121,8 @@ def domain_files(directory, output_file, output_dir):
                         # Create Key Value pairs for '_Conflict.bed'
                         if id not in conflict_bed_dict:
                             conflict_bed_dict[id] = []
-                        conflict_bed_dict[id].append(f'{domain_name}\t{int(ali_from) - 1}\t{ali_to}')
-
+                        #conflict_bed_dict[id].append(f'{domain_name}\t{int(ali_from) - 1}\t{ali_to}')
+                        conflict_bed_dict[id].append(f'{id}\t{int(ali_from) - 1}\t{ali_to}')
                         # Create a Key Value pairs for table file
                         speciesname = os.path.splitext(filename)[0]
                         if speciesname not in species_count_dict:
@@ -183,8 +183,8 @@ def domain_files(directory, output_file, output_dir):
                 for k, v in conflict_list_dict.items():
                     remove_duplicate = list(set(v))
                     if len(remove_duplicate) > 1:
-                        conflicting_domain_list = '\t'.join(remove_duplicate)
-                        conflict_list.write(f'{k}\t{conflicting_domain_list}\n')
+                        #conflicting_domain_list = '\t'.join(remove_duplicate)
+                        conflict_list.write(f'{k}\n')
 
             # Write to Conflict bed file
             if output_dir:
@@ -200,10 +200,13 @@ def domain_files(directory, output_file, output_dir):
 
             with open(output_conflict_bed_path, 'w') as conflict_bed:
                 for k, v in conflict_bed_dict.items():
-                    remove_duplicate = list(set(v))
-                    if len(remove_duplicate) > 1:
-                        conflicting_domain_list = '\t'.join(remove_duplicate)
-                        conflict_bed.write(f'{k}\t{conflicting_domain_list}\n')
+                    if len(v) > 1:
+                        for item in v:
+                            conflict_bed.write('\t'.join(item.split('\t')) + '\n')
+                    #remove_duplicate = list(set(v))
+                    #if len(remove_duplicate) > 1:
+                        #conflicting_domain_list = '\t'.join(remove_duplicate)
+                        #conflict_bed.write(f'{k}\t{conflicting_domain_list}\n')
 
             # Write to table file
             if output_dir:
@@ -236,7 +239,7 @@ def domain_files(directory, output_file, output_dir):
 
 def fasta(directory, secondary, output_file, output_dir):
     for filename in os.listdir(directory):
-        if filename.endswith('.list'):
+        if filename.endswith('.list') and not filename.endswith('_domain.list'):
             list_file_path = os.path.join(directory, filename)
             species_name = filename.replace('.list', '')
 
