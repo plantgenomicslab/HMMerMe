@@ -55,4 +55,6 @@ Within the `output` directory:
    - Include an `--output` option for specifying the output directory, with `output` as the default.
    - Add a `--CPU` option with a default value of 2.
    - Add an option to enable or disable WebLogo generation, disabled by default.
-   - 
+
+## Bugs
+1. the fasta file out was overwrited not appended. This affect that it has only one fasta file.
