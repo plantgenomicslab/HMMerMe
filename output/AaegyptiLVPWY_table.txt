@@ -1,0 +1,2 @@
+Species	7tm_1	7tm_2	
+AaegyptiLVPWY	89	174	
