@@ -412,7 +412,7 @@ def main():
     parser.add_argument("--combine", action = "store_true", help = "Usage: python3 run.py -i [Directory Name] --combine.", required = False)
     parser.add_argument("--fix", action = "store_true", help = "Usage: python3 run.py -i [Directory Name] --fix.", required = False)
     parser.add_argument("--db", help="Path to the database folder", required=False)
-    parser.add_argument("--CPU", help="Number of CPUs", type=int, required=False)
+    parser.add_argument("--CPU", help="Number of CPUs", default=2, type=int, required=False)
     parser.add_argument("--logging", help="Enable logging", action='store_true')
 
     # Flags
