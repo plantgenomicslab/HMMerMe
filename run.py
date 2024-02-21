@@ -21,8 +21,10 @@ def process_fasta_files(directory):
             # Run awk command
             logging.info(f"Processing: {filename}")
 
-            awk_command = f"awk '{{print $1}}' {input_path} > {clean_path}"
-            subprocess.run(awk_command, shell=True, check=True)
+        # Using subprocess.Popen for commands that involve redirections
+            with open(clean_path, "w") as outfile:
+                subprocess.run(["awk", "{print $1}", input_path], stdout=outfile, check=True)
+
 
             seqkit_command = f"seqkit seq {clean_path} -o {clean_fasta_path}"
             subprocess.run(seqkit_command, shell=True, check=True)
@@ -128,15 +130,8 @@ def domain_files(directory, output_file, output_dir):
                         # Create Key Value pairs for '_Conflict.bed'
                         if id not in conflict_bed_dict:
                             conflict_bed_dict[id] = []
-<<<<<<< HEAD
-                        #conflict_bed_dict[id].append(f'{domain_name}\t{int(ali_from) - 1}\t{ali_to}')
                         conflict_bed_dict[id].append(f'{id}\t{int(ali_from) - 1}\t{ali_to}')
                         
-=======
-                        #conflict_bed_dict[id].append(f'{id}\t{domain_name}\t{int(ali_from) - 1}\t{ali_to}')
-                        conflict_bed_dict[id].append(f'{id}\t{int(ali_from) - 1}\t{ali_to}')
-
->>>>>>> c4287da (JoelShin)
                         # Create a Key Value pairs for table file
                         speciesname = os.path.splitext(filename)[0]
                         if speciesname not in species_count_dict:
@@ -203,11 +198,6 @@ def domain_files(directory, output_file, output_dir):
                 for k, v in conflict_list_dict.items():
                     remove_duplicate = list(set(v))
                     if len(remove_duplicate) > 1:
-<<<<<<< HEAD
-                        #conflicting_domain_list = '\t'.join(remove_duplicate)
-=======
-                        #conflict_domain_list = '\t'.join(remove_duplicate)
->>>>>>> c4287da (JoelShin)
                         conflict_list.write(f'{k}\n')
 
             # Write to Conflict bed file
@@ -226,19 +216,7 @@ def domain_files(directory, output_file, output_dir):
                 for k, v in conflict_bed_dict.items():
                     if len(v) > 1:
                         for item in v:
-<<<<<<< HEAD
                             conflict_bed.write('\t'.join(item.split('\t')) + '\n')
-                    #remove_duplicate = list(set(v))
-                    #if len(remove_duplicate) > 1:
-                        #conflicting_domain_list = '\t'.join(remove_duplicate)
-                        #conflict_bed.write(f'{k}\t{conflicting_domain_list}\n')
-=======
-                                conflict_bed.write('\t'.join(item.split('\t')) + '\n')
-#                    remove_duplicate = list(set(v))
-#                    if len(remove_duplicate) > 1:
-#                        conflicting_domain_list = '\t'.join(remove_duplicate)
-#                        conflict_bed.write(f'{k}\t{conflicting_domain_list}\n')
->>>>>>> c4287da (JoelShin)
 
             # Write to table file
             if output_dir:
