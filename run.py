@@ -85,11 +85,19 @@ def run_hmm(directory, cpu_count, database_path):
                 logging.error(e.stderr)
 
 def domain_files(directory, output_file, output_dir):
+
+    # Non - conflict
     list_file_dict = {}
     bed_file_dict = {}
+
+    # Conflict
     conflict_list_dict = {}
     conflict_bed_dict = {}
+
+    # Table
     species_count_dict = {}
+
+    ####################################################################################################################################
     for filename in os.listdir(directory):
         if filename.endswith(".hmm_results"):
             domain_file_path = os.path.join(directory, filename)
@@ -101,6 +109,7 @@ def domain_files(directory, output_file, output_dir):
                         tabbed_lines = re.sub(r'\s+', '\t', lines)
                         columns = tabbed_lines.strip().split('\t')
                         id, domain_name, ali_from, ali_to = columns[0], columns[3], columns[17], columns[18]
+
                         # Create Key, Value pairs for 'list_file_dict'
                         if domain_name not in list_file_dict:
                             list_file_dict[domain_name] = []
@@ -119,9 +128,15 @@ def domain_files(directory, output_file, output_dir):
                         # Create Key Value pairs for '_Conflict.bed'
                         if id not in conflict_bed_dict:
                             conflict_bed_dict[id] = []
+<<<<<<< HEAD
                         #conflict_bed_dict[id].append(f'{domain_name}\t{int(ali_from) - 1}\t{ali_to}')
                         conflict_bed_dict[id].append(f'{id}\t{int(ali_from) - 1}\t{ali_to}')
                         
+=======
+                        #conflict_bed_dict[id].append(f'{id}\t{domain_name}\t{int(ali_from) - 1}\t{ali_to}')
+                        conflict_bed_dict[id].append(f'{id}\t{int(ali_from) - 1}\t{ali_to}')
+
+>>>>>>> c4287da (JoelShin)
                         # Create a Key Value pairs for table file
                         speciesname = os.path.splitext(filename)[0]
                         if speciesname not in species_count_dict:
@@ -130,6 +145,12 @@ def domain_files(directory, output_file, output_dir):
                             species_count_dict[speciesname][domain_name] = 1
                         else:
                             species_count_dict[speciesname][domain_name] += 1
+
+    ####################################################################################################################################
+#    for k, v in conflict_bed_dict.items():
+#        if len(v) > 1:
+#            for item in v:
+#                print('\t'.join(item.split('\t')))
 
     for species_name in os.listdir(directory):
         if species_name.endswith(".hmm_results"):
@@ -182,7 +203,11 @@ def domain_files(directory, output_file, output_dir):
                 for k, v in conflict_list_dict.items():
                     remove_duplicate = list(set(v))
                     if len(remove_duplicate) > 1:
+<<<<<<< HEAD
                         #conflicting_domain_list = '\t'.join(remove_duplicate)
+=======
+                        #conflict_domain_list = '\t'.join(remove_duplicate)
+>>>>>>> c4287da (JoelShin)
                         conflict_list.write(f'{k}\n')
 
             # Write to Conflict bed file
@@ -201,11 +226,19 @@ def domain_files(directory, output_file, output_dir):
                 for k, v in conflict_bed_dict.items():
                     if len(v) > 1:
                         for item in v:
+<<<<<<< HEAD
                             conflict_bed.write('\t'.join(item.split('\t')) + '\n')
                     #remove_duplicate = list(set(v))
                     #if len(remove_duplicate) > 1:
                         #conflicting_domain_list = '\t'.join(remove_duplicate)
                         #conflict_bed.write(f'{k}\t{conflicting_domain_list}\n')
+=======
+                                conflict_bed.write('\t'.join(item.split('\t')) + '\n')
+#                    remove_duplicate = list(set(v))
+#                    if len(remove_duplicate) > 1:
+#                        conflicting_domain_list = '\t'.join(remove_duplicate)
+#                        conflict_bed.write(f'{k}\t{conflicting_domain_list}\n')
+>>>>>>> c4287da (JoelShin)
 
             # Write to table file
             if output_dir:
@@ -331,7 +364,7 @@ def weblogo(directory, output_file, output_dir):
                     output_trimal_file_name = output_file
                 output_trimal_file_name_path = os.path.join(output_dir, output_trimal_file_name)
             else:
-                output_trimal_file_name_path = output_file or f'trimal_{weblogo_name}'
+                output_trimal_file_name_path = output_file or f'{weblogo_name}'
             
             running_weblogo = f'weblogo -f {trimal_and_muscle_path} -D fasta -o {output_trimal_file_name_path} -F pdf --resolution 400'
             subprocess.run(running_weblogo, shell = True, check = True)
@@ -415,7 +448,7 @@ def main():
     parser.add_argument("--CPU", help="Number of CPUs", default=2, type=int, required=False)
     parser.add_argument("--logging", help="Enable logging", action='store_true')
 
-    # Flags
+    # Flags1
     parser.add_argument("--dir", help = "Option: Directory name", required = False)
     parser.add_argument("--out_file", help = "Option: Name your output File", required = False)
     parser.add_argument("--out_dir", help = "Option: Create output Directory", required = False)
