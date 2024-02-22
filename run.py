@@ -265,8 +265,8 @@ def run_hmm(directory, cpu_count, database_path, weblogo):
             trimal_name = muscled_file.replace('_muscled_domain.fasta', '_trimal_muscled_domain.fasta')
             output_trimal_file_name = os.path.join(output_dir, trimal_name)
             print('-' * len(trimal_name) * 2)
-            print(f'Runnning: trimal -in {muscled_file_path} -out {output_trimal_file_name} -gappyout')
-            running_trimal = f'trimal -in {muscled_file_path} -out {output_trimal_file_name} -gappyout'
+            print(f'Runnning: trimal -in {muscled_file_path} -out {output_trimal_file_name} -gt 0.50 -cons 60')
+            running_trimal = f'trimal -in {muscled_file_path} -out {output_trimal_file_name} -gt 0.50 -cons 60'
             subprocess.run(running_trimal, shell = True, check = True)
             print(f'Successfully ran Trimal for {trimal_name} in directory: {output_dir}')
             print('-' * len(trimal_name) * 2)
