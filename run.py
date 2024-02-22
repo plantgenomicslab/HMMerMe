@@ -61,7 +61,7 @@ def list_files(directory):
     subprocess.run(f"hmmpress -f {database_path}", shell=True, check=True)
     return database_path
 
-def run_hmm(directory, cpu_count, database_path):
+def run_hmm(directory, cpu_count, database_path, weblogo):
     """
     Processes each cleaned FASTA file in the input folder using HMMER to search against a database.
     """
@@ -86,350 +86,237 @@ def run_hmm(directory, cpu_count, database_path):
                 logging.error(f"Error running HMMER: {e}")
                 logging.error(e.stderr)
 
-def domain_files(directory, output_file, output_dir):
+    #Output/Species_folder/hmm_results
+    for species_folder_in_output in os.listdir(output_dir):
+        species_folder_path = os.path.join(output_dir, species_folder_in_output)
 
-    # Non - conflict
-    list_file_dict = {}
-    bed_file_dict = {}
+        if not os.path.isdir(species_folder_path):
+            continue
 
-    # Conflict
-    conflict_list_dict = {}
-    conflict_bed_dict = {}
+        # Non conflict
+        list_file_dict = {}
+        bed_file_dict = {}    
 
-    # Table
-    species_count_dict = {}
+        # Conflict
+        conflict_list_dict = {}
+        conflict_bed_dict = {}
 
-    ####################################################################################################################################
-    for filename in os.listdir(directory):
-        if filename.endswith(".hmm_results"):
-            domain_file_path = os.path.join(directory, filename)
-            with open(domain_file_path, 'r') as domain_file:
-                for lines in domain_file:
-                    if lines.startswith('#') or lines.startswith('-'):
-                        continue
-                    else:
-                        tabbed_lines = re.sub(r'\s+', '\t', lines)
-                        columns = tabbed_lines.strip().split('\t')
-                        id, domain_name, ali_from, ali_to = columns[0], columns[3], columns[17], columns[18]
+        # Table
+        table_count_dict = {}
 
-                        # Create Key, Value pairs for 'list_file_dict'
-                        if domain_name not in list_file_dict:
-                            list_file_dict[domain_name] = []
-                        list_file_dict[domain_name].append(f'{id}')
-                        
-                        # Create Key, Value pairs for 'bed_file_dict'
-                        if domain_name not in bed_file_dict:
-                            bed_file_dict[domain_name] = []
-                        bed_file_dict[domain_name].append(f'{id}\t{int(ali_from) - 1}\t{ali_to}')
-
-                        # Create Key, Value pairs for '_Conflict.list'
-                        if id not in conflict_list_dict:
-                            conflict_list_dict[id] = []
-                        conflict_list_dict[id].append(f'{domain_name}')
-
-                        # Create Key Value pairs for '_Conflict.bed'
-                        if id not in conflict_bed_dict:
-                            conflict_bed_dict[id] = []
-                        conflict_bed_dict[id].append(f'{id}\t{int(ali_from) - 1}\t{ali_to}')
-                        
-                        # Create a Key Value pairs for table file
-                        speciesname = os.path.splitext(filename)[0]
-                        if speciesname not in species_count_dict:
-                            species_count_dict[speciesname] = {}
-                        if domain_name not in species_count_dict[speciesname]:
-                            species_count_dict[speciesname][domain_name] = 1
+        for hmm_result_file in os.listdir(species_folder_path):
+            if hmm_result_file.endswith('.hmm_results'):
+                species_name = hmm_result_file.strip().split('.hmm_results')[0]
+                hmm_result_file_path = os.path.join(species_folder_path, hmm_result_file)
+                with open(hmm_result_file_path, 'r') as result_file:
+                    for lines in result_file:
+                        if lines.startswith('#') or lines.startswith('-'):
+                            continue
                         else:
-                            species_count_dict[speciesname][domain_name] += 1
+                            remove_empty_spaces = re.sub(r'\s+', '\t', lines)
+                            columns = remove_empty_spaces.strip().split('\t')
+                            gene_id, domain_id, ali_from, ali_to = columns[0], columns[3], columns[17], columns[18]
+                            
+                            # Create list_file_dict, Keys = domain_id : Values = gene_id
+                            if domain_id not in list_file_dict:
+                                list_file_dict[domain_id] = []
+                            list_file_dict[domain_id].append(gene_id)
 
-    ####################################################################################################################################
-#    for k, v in conflict_bed_dict.items():
-#        if len(v) > 1:
-#            for item in v:
-#                print('\t'.join(item.split('\t')))
+                            # Create bed_file_dict, Keys = domain_id : Values = gene_id \t ali_from \t ali_to
+                            if domain_id not in bed_file_dict:
+                                bed_file_dict[domain_id] = []
+                            bed_file_dict[domain_id].append(f'{gene_id}\t{int(ali_from) - 1}\t{ali_to}')
 
-    for species_name in os.listdir(directory):
-        if species_name.endswith(".hmm_results"):
-            file_name = species_name.strip().split(".hmm_results")[0]
-            
-            # Write to list file
-            for k, v in list_file_dict.items():
-                if output_dir:
-                    if not os.path.exists(output_dir):
-                        os.makedirs(output_dir)
-                    if not output_file:
-                        output_list_file = f'{file_name}_{k}.list'
-                    else:
-                        output_list_file = output_file
-                    output_list_file_path = os.path.join(output_dir, output_list_file)
-                else:
-                    output_list_file_path = output_file or f'{file_name}_{k}.list'
-                with open(output_list_file_path, 'w') as list_file:
-                    for values in v:
-                        list_file.write(f'{values}\n')
-    
-            # Write to bed file
-            for k, v in bed_file_dict.items():
-                if output_dir:
-                    if not os.path.exists(output_dir):
-                        os.makedirs(output_dir)
-                    if not output_file:
-                        output_bed_file = f'{file_name}_{k}_domain.bed'
-                    else:
-                        output_bed_file = output_file
-                    output_bed_file_path = os.path.join(output_dir, output_bed_file)
-                else:
-                    output_bed_file_path = output_file or f'{file_name}_{k}_domain.bed'
-                with open(output_bed_file_path, 'w') as bed_file:
-                    for values in v:
-                        bed_file.write(f'{values}\n')
+                            # Create conflict_list_dict, keys = gene_id : values = domain_id
+                            if gene_id not in conflict_list_dict:
+                                conflict_list_dict[gene_id] = []
+                            conflict_list_dict[gene_id].append(domain_id)
 
-            # Write to Conflict list file
-            if output_dir:
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-                if not output_file:
-                    output_conflict_list_file = f'{file_name}_conflict.list'
-                else:
-                    output_conflict_list_file = output_file
-                output_conflict_list_path = os.path.join(output_dir, output_conflict_list_file)
-            else:
-                output_conflict_list_path = output_file or f'{file_name}_conflict.list'
-            with open(output_conflict_list_path, 'w') as conflict_list:
-                for k, v in conflict_list_dict.items():
-                    remove_duplicate = list(set(v))
-                    if len(remove_duplicate) > 1:
-                        conflict_list.write(f'{k}\n')
+                            # Create conflict_bed_dict, Keys = gene_id : values = ali_from \t ali_to
+                            if gene_id not in conflict_bed_dict:
+                                conflict_bed_dict[gene_id] = []
+                            conflict_bed_dict[gene_id].append(f'{int(ali_from) - 1}\t{ali_to}') 
 
-            # Write to Conflict bed file
-            if output_dir:
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-                if not output_file:
-                    output_conflict_bed_file = f'{file_name}_conflict_domain.bed'
-                else:
-                    output_conflict_bed_file = output_file
-                output_conflict_bed_path = os.path.join(output_dir, output_conflict_bed_file)
-            else:
-                output_conflict_bed_path = output_file or f'{file_name}_conflict_domain.bed'
+                            # Create Table, Keys = species_name : Values = counts
+                            if species_name not in table_count_dict:
+                                table_count_dict[species_name] = {}
+                            if domain_id not in table_count_dict[species_name]:
+                                table_count_dict[species_name][domain_id] = 1
+                            else:
+                                table_count_dict[species_name][domain_id] += 1
 
-            with open(output_conflict_bed_path, 'w') as conflict_bed:
-                for k, v in conflict_bed_dict.items():
-                    if len(v) > 1:
-                        for item in v:
-                            conflict_bed.write('\t'.join(item.split('\t')) + '\n')
+                # Write '{species}_{domain}.list' files
+                for k, v in list_file_dict.items():
+                    output_list_file_name = f'{species_name}_{k}.list'
+                    print('-' * len(output_list_file_name) * 5)
+                    print(f'Preparing to Write in: {output_list_file_name}')
+                    print('\n')
+                    with open(os.path.join(output_dir, output_list_file_name), 'w') as writing_list_output_file:
+                        for genes in v:
+                            writing_list_output_file.write(f'{genes}\n')
+                        print(f'Successfully written your {output_list_file_name} in directory: {output_dir}')
+                        print('-' * len(output_list_file_name) * 5)
+                        print('\n')
 
-            # Write to table file
-            if output_dir:
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-                if not output_file:
-                    output_table_file = f'{file_name}_table.txt'
-                else:
-                    output_table_file = output_file
-                output_table_path = os.path.join(output_dir, output_table_file)
-            else:
-                output_table_path = output_file or f'{file_name}_table.txt'
+                # Write '{species}_{domain}_domain.bed' files
+                for k, v in bed_file_dict.items():
+                    output_bed_file_name = f'{species_name}_{k}_domain.bed'
+                    print('-' * len(output_bed_file_name) * 5)
+                    print(f'Preparing to write in: {output_bed_file_name}')
+                    print('\n')
+                    with open(os.path.join(output_dir, output_bed_file_name), 'w') as writing_bed_output_file:
+                        for bed_format in v:
+                            writing_bed_output_file.write(f'{bed_format}\n')
+                        print(f'Successfully written your {output_bed_file_name} in directory: {output_dir}')
+                        print('-' * len(output_bed_file_name) * 5)
+                        print('\n')
 
-            sorting_domain_counts = set()
-            for name_domain in species_count_dict.values():
-                sorting_domain_counts.update(name_domain)
+                # Write '{species}_conflict.list' files
+                output_conflict_file_name = f'{species_name}_conflict.list'
+                print('-' * len(output_conflict_file_name) * 5)
+                print(f'Preparing to write in: {output_conflict_file_name}')
+                print('\n')
+                with open(os.path.join(output_dir, output_conflict_file_name), 'w') as writing_conflict_output_file:
+                    for k, v in conflict_list_dict.items():
+                        remove_duplicates = list(set(v))
+                        if len(remove_duplicates) > 1:
+                            conflicting_domain = '\t'.join(remove_duplicates)
+                            writing_conflict_output_file.write(f'{k}\t{conflicting_domain}\n')
+                    print(f'Successfully written your {output_conflict_file_name} in directory: {output_dir}')
+                    print('-' * len(output_conflict_file_name) * 5)
+                    print('\n')
+                                      
+###################################################################################################################
+        for conflict_list in os.listdir(output_dir):
+            if conflict_list.endswith('_conflict.list'):
+                species_name = conflict_list.strip().split('_conflict.list')[0]
+                conflict_file_path = os.path.join(output_dir, conflict_list)
+                output_conflict_bed_name = f'{species_name}_conflict_domain.bed'
+                with open(conflict_file_path, 'r') as result_file, open(os.path.join(output_dir, output_conflict_bed_name), 'w') as writing_conflict_bed_file:
+                    test_dict = {}
+                    for lines in result_file:
+                        gene_id_in_conflict_file = lines.strip().split('\t')[0]
+                        test_dict[gene_id_in_conflict_file] = []
+                        for k, v in conflict_bed_dict.items():
+                            #print(f'{k}\t{v}\n')
+                            if k == gene_id_in_conflict_file:
+                                writing_conflict_bed_file.write(f'{v}')
+###################################################################################################################
+                                
+                for k, v in table_count_dict.items():
+                    output_table_file_name = f'{k}_counts.txt'
+                    with open(os.path.join(output_dir, output_table_file_name), 'w') as writing_table_file:
+                        writing_table_file.write(f'{k}\t{v}\n')
 
-            sorted_domain = sorted(sorting_domain_counts)
-            with open(output_table_path, 'w') as table_file:
-                table_file.write(f'Species\t')
-                for sorted_domain_names in sorted_domain:
-                    table_file.write(f'{sorted_domain_names}\t')
-                table_file.write(f'\n')
-                for k, v in species_count_dict.items():
-                    table_file.write(f'{k}\t')
-                    for counts in sorting_domain_counts:
-                        total = v.get(counts, 0)
-                        table_file.write(f'{total}\t')
-                    table_file.write(f'\n')
+    # Createa Fasta files using '.list' against 'clean.fasta'
+    for list_file in os.listdir(output_dir):
+        if list_file.endswith('.list'):
+            list_file_path = os.path.join(output_dir, list_file)
+            name = list_file.replace('.list', '')
+            output_file_name = f'{list_file.split(".list")[0]}.fasta'
+            output_file_name_path = os.path.join(output_dir, output_file_name)
 
-def fasta(directory, secondary, output_file, output_dir):
-    for filename in os.listdir(directory):
-        if filename.endswith('.list') and not filename.endswith('_domain.list'):
-            list_file_path = os.path.join(directory, filename)
-            species_name = filename.replace('.list', '')
-
-            for clean_files in os.listdir(secondary):
-                if clean_files.endswith('_clean.fasta') and clean_files.startswith(species_name.split('_')[0]):
-                    clean_fasta_path = os.path.join(secondary, clean_files)
-                    if output_dir:
-                        if not os.path.exists(output_dir):
-                            os.makedirs(output_dir)
-                        if not output_file:
-                            output_file_name = f'{species_name}.fasta'
-                        else:
-                            output_file_name = output_file
-                        output_file_name_path = os.path.join(output_dir, output_file_name)
-                    else:
-                        output_file_name_path = output_file or f'{species_name}.fasta'
-
+            for clean_files in os.listdir(directory):
+                if clean_files.endswith('_clean.fasta') and clean_files.startswith(name.split('_')[0]):
+                    clean_fasta_path = os.path.join(directory, clean_files)
+                    print('-' * len(output_file_name) * 5)
+                    print(f'Running: seqkit grep -f {list_file_path} {clean_fasta_path} -o {output_file_name_path}')
+                    print('\n')
                     running_seqkit = f'seqkit grep -f {list_file_path} {clean_fasta_path} -o {output_file_name_path}'
                     subprocess.run(running_seqkit, shell = True, check = True)
-        
-        elif filename.endswith('_domain.bed'):
-            list_file_path = os.path.join(directory, filename)
-            species_name = filename.replace('_domain.bed', '')
+            print(f'Successfully ran seqkit for {output_file_name} in directory: {output_dir}')
+            print('-' * len(output_file_name) * 5)
+            print('\n')
+               
+        elif list_file.endswith('_domain.bed'):
+            list_file_path = os.path.join(output_dir, list_file)
+            name = list_file.replace('_domain.bed', '')
+            output_file_name = f'{list_file.split("_domain.bed")[0]}_domain.fasta'
+            output_file_name_path = os.path.join(output_dir, output_file_name)  
 
-            for clean_files in os.listdir(secondary):
-                if clean_files.endswith('_clean.fasta') and clean_files.startswith(species_name.split('_')[0]):
-                    clean_fasta_path = os.path.join(secondary, clean_files)
-                    if output_dir:
-                        if not os.path.exists(output_dir):
-                            os.makedirs(output_dir)
-                        if not output_file:
-                            output_file_name = f'{species_name}_domain.fasta'
-                        else:
-                            output_file_name = output_file
-                        output_file_name_path = os.path.join(output_dir, output_file_name)
-                    else:
-                        output_file_name_path = output_file or f'{species_name}_domain.fasta'
-
+            for clean_files in os.listdir(directory):
+                if clean_files.endswith('_clean.fasta') and clean_files.startswith(name.split('_')[0]):
+                    clean_fasta_path = os.path.join(directory, clean_files)
+                    print('-' * len(output_file_name) * 4)
+                    print(f'Running: seqkit subseq --update-faidx --bed {list_file_path} {clean_fasta_path} -o {output_file_name_path}')
+                    print('\n')
                     running_seqkit_subseq = f'seqkit subseq --update-faidx --bed {list_file_path} {clean_fasta_path} -o {output_file_name_path}'
                     subprocess.run(running_seqkit_subseq, shell = True, check = True)
+            print(f'Successfully ran seqkit for {output_file_name} in directory: {output_dir}')
+            print('-' * len(output_file_name) * 4)
+            print('\n')
 
-def muscle(directory, output_file, output_dir):
-    for domain_fasta in os.listdir(directory):
-        if domain_fasta.endswith('_domain.fasta'):
-            domain_fasta_path = os.path.join(directory, domain_fasta)
-            muscled_name = domain_fasta.replace('_domain.fasta', '_domain_muscled.fasta')
-            if output_dir:
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-                if not output_file:
-                    output_muscle_file_name = f'{muscled_name}'
-                else:
-                    output_muscle_file_name = output_file
-                output_muscle_file_name_path = os.path.join(output_dir, output_muscle_file_name)
-            else:
-                output_muscle_file_name_path = output_file or f'{muscled_name}'
-            
-            running_muscle = f'muscle -in {domain_fasta_path} -out {output_muscle_file_name_path}'
+    for fasta_file in os.listdir(output_dir):
+        if fasta_file.endswith('_domain.fasta') and not fasta_file.endswith('_conflict_domain.fasta'):
+            fasta_file_path = os.path.join(output_dir, fasta_file)
+            fasta_name = fasta_file.replace('_domain.fasta', '_muscled_domain.fasta')
+            output_muscled_file_name = os.path.join(output_dir, fasta_name)
+            print('-' * len(fasta_name) * 3)
+            print(f'Running: muscle -in {fasta_file_path} -out {output_muscled_file_name}')
+            running_muscle = f'muscle -in {fasta_file_path} -out {output_muscled_file_name}'
             subprocess.run(running_muscle, shell = True, check = True)
+            print(f'Successfully ran Muscle for {fasta_name} in directory: {output_dir}')
+            print('-' * len(fasta_name) * 3)
+            print('\n')   
 
-def trimal(directory, output_file, output_dir):
-    for muscled_fasta_files in os.listdir(directory):
-        if muscled_fasta_files.endswith('_domain_muscled.fasta'):
-            muscled_files_path = os.path.join(directory, muscled_fasta_files)
-            if output_dir:
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-                if not output_file:
-                    output_trimal_file_name = f'trimal_{muscled_fasta_files}'
-                else:
-                    output_trimal_file_name = output_file
-                output_trimal_file_name_path = os.path.join(output_dir, output_trimal_file_name)
-            else:
-                output_trimal_file_name_path = output_file or f'trimal_{muscled_fasta_files}'
-
-            running_trimal = f'trimal -in {muscled_files_path} -out {output_trimal_file_name_path} -gappyout'
+    for muscled_file in os.listdir(output_dir):
+        if muscled_file.endswith('_muscled_domain.fasta'):
+            muscled_file_path = os.path.join(output_dir, muscled_file)
+            trimal_name = muscled_file.replace('_muscled_domain.fasta', '_trimal_muscled_domain.fasta')
+            output_trimal_file_name = os.path.join(output_dir, trimal_name)
+            print('-' * len(trimal_name) * 2)
+            print(f'Runnning: trimal -in {muscled_file_path} -out {output_trimal_file_name} -gappyout')
+            running_trimal = f'trimal -in {muscled_file_path} -out {output_trimal_file_name} -gappyout'
             subprocess.run(running_trimal, shell = True, check = True)
+            print(f'Successfully ran Trimal for {trimal_name} in directory: {output_dir}')
+            print('-' * len(trimal_name) * 2)
+            print('\n')
 
-def weblogo(directory, output_file, output_dir):
-    for trimal_and_muscle_files in os.listdir(directory):
-        if trimal_and_muscle_files.endswith('_muscled.fasta'):
-            trimal_and_muscle_path = os.path.join(directory, trimal_and_muscle_files)
-            weblogo_name = trimal_and_muscle_files.replace('_muscled.fasta', '_weblogo.pdf')
-            if output_dir:
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-                if not output_file:
-                    output_trimal_file_name = f'{weblogo_name}'
-                else:
-                    output_trimal_file_name = output_file
-                output_trimal_file_name_path = os.path.join(output_dir, output_trimal_file_name)
-            else:
-                output_trimal_file_name_path = output_file or f'{weblogo_name}'
-            
-            running_weblogo = f'weblogo -f {trimal_and_muscle_path} -D fasta -o {output_trimal_file_name_path} -F pdf --resolution 400'
-            subprocess.run(running_weblogo, shell = True, check = True)
+    for seqkit_fasta_files in os.listdir(output_dir):
+        if seqkit_fasta_files.endswith('.fasta'):
+            seqkit_file_path = os.path.join(output_dir, seqkit_fasta_files)
+            running_sed = f"sed -i 's/:.//g' {seqkit_file_path}"
+            subprocess.run(running_sed, shell = True, check = True)
 
-def fix_format(directory, output_file, output_dir):
-    for fasta_files in os.listdir(directory):
-        if fasta_files.endswith('_domain.fasta'):
-            fasta_files_path = os.path.join(directory, fasta_files)
-            remove_species_name = re.sub(r'^[^_]*_', '', fasta_files_path)
-            domain_name = remove_species_name.replace('_domain.fasta', '')
-            if output_dir:
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-                if not output_file:
-                    output_fixed_file_name = f'fixed_{fasta_files}'
-                else:
-                    output_fixed_file_name = output_file
-                output_fixed_file_name_path = os.path.join(output_dir, output_fixed_file_name)
-            else:
-                output_fixed_file_name_path = output_file or f'fixed_{fasta_files}'
+    #species_dict = {}
+    #for species_file in os.listdir(output_dir):
+    #    if species_file.endswith('_domain.fasta')
 
-            with open(fasta_files_path, 'r') as reading_fasta, open(output_fixed_file_name_path, 'w') as writing_fixed_fasta:
-                for sequence_id in reading_fasta:
-                    if sequence_id.startswith('>'):
-                        new_header = re.sub(r':.', f'-{domain_name}', sequence_id)
-                        writing_fixed_fasta.write(new_header)
-                    else:
-                        writing_fixed_fasta.write(sequence_id)
+    if weblogo:
+        for muscle_or_trimal_file in os.listdir(output_dir):
+            if muscle_or_trimal_file.endswith('_muscled_domain.fasta'):
+                muscle_path = os.path.join(output_dir, muscle_or_trimal_file)
+                weblogo_muscle_name = muscle_or_trimal_file.replace('_muscled_domain.fasta', '_muscled_domain.pdf')
+                output_weblogo_muscle = os.path.join(output_dir, weblogo_muscle_name)
+                print('-' * len(weblogo_muscle_name) * 2)
+                print(f'Running: weblogo -f {muscle_path} -D fasta -o {output_weblogo_muscle} -F pdf --resolution 400')
+                running_weblogo_for_muscle = f'weblogo -f {muscle_path} -D fasta -o {output_weblogo_muscle} -F pdf --resolution 400'
+                subprocess.run(running_weblogo_for_muscle, shell = True, check = True)
+                print(f'Successfully ran Weblogo for {weblogo_muscle_name} in directory: {output_dir}')
+                print('-' * len(weblogo_muscle_name) * 2)
+                print('\n')
 
-def combine_domains(directory, output_file, output_dir):
-    species_dict = {}
-    for species_file in os.listdir(directory):
-        if species_file.startswith('fixed_') and species_file.endswith('_domain.fasta'):
-            species_file_path = os.path.join(directory, species_file)
-            species_name = species_file.strip().split('_')[1]
-            if species_name not in species_dict:
-                species_dict[species_name] = []
-
-            with open(species_file_path, 'r') as fasta_information:
-                id = ''
-                sequence = ''
-                for line in fasta_information:
-                    if line.startswith('>'):
-                        if sequence:
-                            species_dict[species_name].append(f'{id}{sequence}')
-                        id = line
-                        sequence = ''
-                    else:
-                        sequence += line
-                species_dict[species_name].append(f'{id}{sequence}')
-
-    for k, v in species_dict.items():
-        if output_dir:
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-            if not output_file:
-                output_fixed_file_name = f'{k}_combined.fasta'
-            else:
-                output_fixed_file_name = output_file
-            output_fixed_file_name_path = os.path.join(output_dir, output_fixed_file_name)
-        else:
-            output_fixed_file_name_path = output_file or f'{k}_combined.fasta'
-
-        with open(output_fixed_file_name_path, 'w') as output:
-            for seq in v:
-                output.write(f'{seq}\n')
+            elif muscle_or_trimal_file.endswith('_trimal_muscled_domain.fasta'):
+                trimal_path = os.path.join(output_dir, muscle_or_trimal_file)
+                weblogo_trimal_name = muscle_or_trimal_file.replace('_trimal_muscled_domain.fasta', '_trimal_muscled_domain.pdf')
+                output_weblogo_trimal = os.path.join(output_dir, weblogo_trimal_name)
+                print('-' * len(weblogo_trimal_name) * 2)
+                print(f'Running: weblogo -f {trimal_path} -D fasta -o {output_weblogo_trimal} -F pdf --resolution 400')
+                running_weblogo_for_trimal = f'weblogo -f {trimal_path} -D fasta -o {output_weblogo_trimal} -F pdf --resolution 400'
+                subprocess.run(running_weblogo_for_trimal, shell = True, check = True)
+                print(f'Successfully ran Weblogo for {weblogo_trimal_name} in directory: {output_dir}')
+                print('-' * len(weblogo_trimal_name) * 2)
+                print('\n')
 
 def main():
     # Initialize the argument parser
     parser = argparse.ArgumentParser(description="List files from specified directories and set number of CPUs.")
     # Add arguments for input folder, database folder, and number of CPUs
-    parser.add_argument("-i", "--input", help="Path to the input folder", required=True)
-    parser.add_argument("--files", action = "store_true", help = "Usage: python3 run.py -i [Directory Name] --files. Obtain LIST, DOMAIN_BED, CONFLICT_LIST, DOMAIN_CONFLICT_BED and a Table file", required = False)
-    parser.add_argument("--fasta", action = "store_true", help = "Usage: python3 run.py -i [Directory Name] --dir [Secondary Folder] --fasta. Obtain FASTA, DOMAIN_FASTA, CONFLICT_FASTA, and DOMAIN_CONFLICT_FASTA files", required = False)
-    parser.add_argument("--muscle", action = "store_true", help = "Usage: python3 run.py -i [Directory Name] --muscle.", required = False)
-    parser.add_argument("--trimal", action = "store_true", help = "Usage: python3 run.py -i [Directory Name] --trimal.", required = False)
-    parser.add_argument("--weblogo", action = "store_true", help = "Usage: python3 run.py -i [Directory Name] --weblogo.", required = False)
-    parser.add_argument("--combine", action = "store_true", help = "Usage: python3 run.py -i [Directory Name] --combine.", required = False)
-    parser.add_argument("--fix", action = "store_true", help = "Usage: python3 run.py -i [Directory Name] --fix.", required = False)
-    parser.add_argument("--db", help="Path to the database folder", required=False)
-    parser.add_argument("--CPU", help="Number of CPUs", default=2, type=int, required=False)
-    parser.add_argument("--logging", help="Enable logging", action='store_true')
-
-    # Flags1
-    parser.add_argument("--dir", help = "Option: Directory name", required = False)
-    parser.add_argument("--out_file", help = "Option: Name your output File", required = False)
-    parser.add_argument("--out_dir", help = "Option: Create output Directory", required = False)
+    parser.add_argument("--input", help="Path to the input folder", required=True)
+    parser.add_argument("--db", help="Path to the database folder", required=True)
+    parser.add_argument("--CPU", help="Number of CPUs", default=2, type=int, required=True)
+    parser.add_argument("--logging", help="Enable logging", action='store_true', required=False)
+    parser.add_argument("--weblogo", help="Draw weblogo using muscled/aligned sequences", action='store_true')
     
     # Parse the arguments
     args = parser.parse_args()
@@ -447,30 +334,9 @@ def main():
     database_path = list_files(args.db)
     if database_path:
         logging.info("Running HMM searches.")
-        run_hmm(args.input, args.CPU, database_path)
+        run_hmm(args.input, args.CPU, database_path, args.weblogo)
     else:
         logging.error("Database creation failed or was skipped.")
-
-    if args.files:
-        domain_files(args.input, args.out_file, args.out_dir)
-
-    if args.fasta:
-        fasta(args.input, args.dir, args.out_file, args.out_dir)
-
-    if args.muscle:
-        muscle(args.input, args.out_file, args.out_dir)
-
-    if args.trimal:
-        trimal(args.input, args.out_file, args.out_dir)
-
-    if args.weblogo:
-        weblogo(args.input, args.out_file, args.out_dir)
-    
-    if args.fix:
-        fix_format(args.input, args.out_file, args.out_dir)
-
-    if args.combine:
-        combine_domains(args.input, args.out_file, args.out_dir)
 
 if __name__ == "__main__":
     main()
