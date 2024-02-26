@@ -151,10 +151,10 @@ def run_hmm(directory, cpu_count, database_path, weblogo):
                     print('-' * len(output_list_file_name) * 5)
                     print(f'Preparing to Write in: {output_list_file_name}')
                     print('\n')
-                    with open(os.path.join(output_dir, output_list_file_name), 'w') as writing_list_output_file:
+                    with open(os.path.join(species_folder_path, output_list_file_name), 'w') as writing_list_output_file:
                         for genes in v:
                             writing_list_output_file.write(f'{genes}\n')
-                        print(f'Successfully written your {output_list_file_name} in directory: {output_dir}')
+                        print(f'Successfully written your {output_list_file_name} in directory: {species_folder_in_output}')
                         print('-' * len(output_list_file_name) * 5)
                         print('\n')
 
@@ -164,10 +164,10 @@ def run_hmm(directory, cpu_count, database_path, weblogo):
                     print('-' * len(output_bed_file_name) * 5)
                     print(f'Preparing to write in: {output_bed_file_name}')
                     print('\n')
-                    with open(os.path.join(output_dir, output_bed_file_name), 'w') as writing_bed_output_file:
+                    with open(os.path.join(species_folder_path, output_bed_file_name), 'w') as writing_bed_output_file:
                         for bed_format in v:
                             writing_bed_output_file.write(f'{bed_format}\n')
-                        print(f'Successfully written your {output_bed_file_name} in directory: {output_dir}')
+                        print(f'Successfully written your {output_bed_file_name} in directory: {species_folder_in_output}')
                         print('-' * len(output_bed_file_name) * 5)
                         print('\n')
 
@@ -176,13 +176,14 @@ def run_hmm(directory, cpu_count, database_path, weblogo):
                 print('-' * len(output_conflict_file_name) * 5)
                 print(f'Preparing to write in: {output_conflict_file_name}')
                 print('\n')
-                with open(os.path.join(output_dir, output_conflict_file_name), 'w') as writing_conflict_output_file:
+                with open(os.path.join(species_folder_path, output_conflict_file_name), 'w') as writing_conflict_output_file:
                     for k, v in conflict_list_dict.items():
                         remove_duplicates = list(set(v))
                         if len(remove_duplicates) > 1:
                             conflicting_domain = '\t'.join(remove_duplicates)
-                            writing_conflict_output_file.write(f'{k}\t{conflicting_domain}\n')
-                    print(f'Successfully written your {output_conflict_file_name} in directory: {output_dir}')
+                            #writing_conflict_output_file.write(f'{k}\t{conflicting_domain}\n')
+                            writing_conflict_output_file.write(f'{k}\n')
+                    print(f'Successfully written your {output_conflict_file_name} in directory: {species_folder_in_output}')
                     print('-' * len(output_conflict_file_name) * 5)
                     print('\n')
                                       
@@ -203,110 +204,118 @@ def run_hmm(directory, cpu_count, database_path, weblogo):
                                 writing_conflict_bed_file.write(f'{v}')
 ###################################################################################################################
                                 
-                for k, v in table_count_dict.items():
-                    output_table_file_name = f'{k}_counts.txt'
-                    with open(os.path.join(output_dir, output_table_file_name), 'w') as writing_table_file:
-                        writing_table_file.write(f'{k}\t{v}\n')
+        for k, v in table_count_dict.items():
+            output_table_file_name = f'{k}_counts.txt'
+            with open(os.path.join(species_folder_path, output_table_file_name), 'w') as writing_table_file:
+                # Write header
+                writing_table_file.write(k + '\t'.join([''] + list(v.keys())) + '\n')
+        
+                # Write species name and counts
+                writing_table_file.write(f'{k}\t')
+                for count in v.values():
+                    writing_table_file.write(f'{count}\t')
+                writing_table_file.write('\n')
 
-    # Createa Fasta files using '.list' against 'clean.fasta'
-    for list_file in os.listdir(output_dir):
-        if list_file.endswith('.list'):
-            list_file_path = os.path.join(output_dir, list_file)
-            name = list_file.replace('.list', '')
-            output_file_name = f'{list_file.split(".list")[0]}.fasta'
-            output_file_name_path = os.path.join(output_dir, output_file_name)
 
-            for clean_files in os.listdir(directory):
-                if clean_files.endswith('_clean.fasta') and clean_files.startswith(name.split('_')[0]):
-                    clean_fasta_path = os.path.join(directory, clean_files)
-                    print('-' * len(output_file_name) * 5)
-                    print(f'Running: seqkit grep -f {list_file_path} {clean_fasta_path} -o {output_file_name_path}')
-                    print('\n')
-                    running_seqkit = f'seqkit grep -f {list_file_path} {clean_fasta_path} -o {output_file_name_path}'
-                    subprocess.run(running_seqkit, shell = True, check = True)
-            print(f'Successfully ran seqkit for {output_file_name} in directory: {output_dir}')
-            print('-' * len(output_file_name) * 5)
-            print('\n')
+        # Create Fasta files using '.list' against 'clean.fasta'
+        for list_file in os.listdir(species_folder_path):
+            if list_file.endswith('.list'):
+                list_file_path = os.path.join(species_folder_path, list_file)
+                name = list_file.replace('.list', '')
+                output_file_name = f'{list_file.split(".list")[0]}.fasta'
+                output_file_name_path = os.path.join(species_folder_path, output_file_name)
+
+                for clean_files in os.listdir(directory):
+                    if clean_files.endswith('_clean.fasta') and clean_files.startswith(name.split('_')[0]):
+                        clean_fasta_path = os.path.join(directory, clean_files)
+                        print('-' * len(output_file_name) * 5)
+                        print(f'Running: seqkit grep -f {list_file_path} {clean_fasta_path} -o {output_file_name_path}')
+                        print('\n')
+                        running_seqkit = f'seqkit grep -f {list_file_path} {clean_fasta_path} -o {output_file_name_path}'
+                        subprocess.run(running_seqkit, shell = True, check = True)
+                print(f'Successfully ran seqkit for {output_file_name} in directory: {species_folder_path}')
+                print('-' * len(output_file_name) * 5)
+                print('\n')
                
-        elif list_file.endswith('_domain.bed'):
-            list_file_path = os.path.join(output_dir, list_file)
-            name = list_file.replace('_domain.bed', '')
-            output_file_name = f'{list_file.split("_domain.bed")[0]}_domain.fasta'
-            output_file_name_path = os.path.join(output_dir, output_file_name)  
+            elif list_file.endswith('_domain.bed'):
+                list_file_path = os.path.join(species_folder_path, list_file)
+                name = list_file.replace('_domain.bed', '')
+                output_file_name = f'{list_file.split("_domain.bed")[0]}_domain.fasta'
+                output_file_name_path = os.path.join(species_folder_path, output_file_name)  
 
-            for clean_files in os.listdir(directory):
-                if clean_files.endswith('_clean.fasta') and clean_files.startswith(name.split('_')[0]):
-                    clean_fasta_path = os.path.join(directory, clean_files)
-                    print('-' * len(output_file_name) * 4)
-                    print(f'Running: seqkit subseq --update-faidx --bed {list_file_path} {clean_fasta_path} -o {output_file_name_path}')
-                    print('\n')
-                    running_seqkit_subseq = f'seqkit subseq --update-faidx --bed {list_file_path} {clean_fasta_path} -o {output_file_name_path}'
-                    subprocess.run(running_seqkit_subseq, shell = True, check = True)
-            print(f'Successfully ran seqkit for {output_file_name} in directory: {output_dir}')
-            print('-' * len(output_file_name) * 4)
-            print('\n')
+                for clean_files in os.listdir(directory):
+                    if clean_files.endswith('_clean.fasta') and clean_files.startswith(name.split('_')[0]):
+                        clean_fasta_path = os.path.join(directory, clean_files)
+                        print('-' * len(output_file_name) * 4)
+                        print(f'Running: seqkit subseq --update-faidx --bed {list_file_path} {clean_fasta_path} -o {output_file_name_path}')
+                        print('\n')
+                        running_seqkit_subseq = f'seqkit subseq --update-faidx --bed {list_file_path} {clean_fasta_path} -o {output_file_name_path}'
+                        subprocess.run(running_seqkit_subseq, shell = True, check = True)
+                print(f'Successfully ran seqkit for {output_file_name} in directory: {species_folder_path}')
+                print('-' * len(output_file_name) * 4)
+                print('\n')
 
-    for fasta_file in os.listdir(output_dir):
-        if fasta_file.endswith('_domain.fasta') and not fasta_file.endswith('_conflict_domain.fasta'):
-            fasta_file_path = os.path.join(output_dir, fasta_file)
-            fasta_name = fasta_file.replace('_domain.fasta', '_muscled_domain.fasta')
-            output_muscled_file_name = os.path.join(output_dir, fasta_name)
-            print('-' * len(fasta_name) * 3)
-            print(f'Running: muscle -in {fasta_file_path} -out {output_muscled_file_name}')
-            running_muscle = f'muscle -in {fasta_file_path} -out {output_muscled_file_name}'
-            subprocess.run(running_muscle, shell = True, check = True)
-            print(f'Successfully ran Muscle for {fasta_name} in directory: {output_dir}')
-            print('-' * len(fasta_name) * 3)
-            print('\n')   
+        for fasta_file in os.listdir(species_folder_path):
+            if fasta_file.endswith('_domain.fasta') and not fasta_file.endswith('_conflict_domain.fasta'):
+                fasta_file_path = os.path.join(species_folder_path, fasta_file)
+                fasta_name = fasta_file.replace('_domain.fasta', '_muscled_domain.fasta')
+                output_muscled_file_name = os.path.join(species_folder_path, fasta_name)
+                print('-' * len(fasta_name) * 3)
+                print(f'Running: muscle -in {fasta_file_path} -out {output_muscled_file_name}')
+                running_muscle = f'muscle -in {fasta_file_path} -out {output_muscled_file_name}'
+                subprocess.run(running_muscle, shell = True, check = True)
+                print(f'Successfully ran Muscle for {fasta_name} in directory: {species_folder_path}')
+                print('-' * len(fasta_name) * 3)
+                print('\n')   
 
-    for muscled_file in os.listdir(output_dir):
-        if muscled_file.endswith('_muscled_domain.fasta'):
-            muscled_file_path = os.path.join(output_dir, muscled_file)
-            trimal_name = muscled_file.replace('_muscled_domain.fasta', '_trimal_muscled_domain.fasta')
-            output_trimal_file_name = os.path.join(output_dir, trimal_name)
-            print('-' * len(trimal_name) * 2)
-            print(f'Runnning: trimal -in {muscled_file_path} -out {output_trimal_file_name} -gt 0.50 -cons 60')
-            running_trimal = f'trimal -in {muscled_file_path} -out {output_trimal_file_name} -gt 0.50 -cons 60'
-            subprocess.run(running_trimal, shell = True, check = True)
-            print(f'Successfully ran Trimal for {trimal_name} in directory: {output_dir}')
-            print('-' * len(trimal_name) * 2)
-            print('\n')
+        for muscled_file in os.listdir(species_folder_path):
+            if muscled_file.endswith('_muscled_domain.fasta'):
+                muscled_file_path = os.path.join(species_folder_path, muscled_file)
+                trimal_name = muscled_file.replace('_muscled_domain.fasta', '_trimal_muscled_domain.fasta')
+                output_trimal_file_name = os.path.join(species_folder_path, trimal_name)
+                print('-' * len(trimal_name) * 2)
+                print(f'Runnning: trimal -in {muscled_file_path} -out {output_trimal_file_name} -gt 0.50 -cons 60')
+                running_trimal = f'trimal -in {muscled_file_path} -out {output_trimal_file_name} -gt 0.50 -cons 60'
+                subprocess.run(running_trimal, shell = True, check = True)
+                print(f'Successfully ran Trimal for {trimal_name} in directory: {species_folder_path}')
+                print('-' * len(trimal_name) * 2)
+                print('\n')
 
-    for seqkit_fasta_files in os.listdir(output_dir):
-        if seqkit_fasta_files.endswith('.fasta'):
-            seqkit_file_path = os.path.join(output_dir, seqkit_fasta_files)
-            running_sed = f"sed -i 's/:.//g' {seqkit_file_path}"
-            subprocess.run(running_sed, shell = True, check = True)
+        for seqkit_fasta_files in os.listdir(species_folder_path):
+            if seqkit_fasta_files.endswith('.fasta'):
+                seqkit_file_path = os.path.join(species_folder_path, seqkit_fasta_files)
+                running_sed = f"sed -i 's/:.//g' {seqkit_file_path}"
+                subprocess.run(running_sed, shell = True, check = True)
 
     #species_dict = {}
     #for species_file in os.listdir(output_dir):
     #    if species_file.endswith('_domain.fasta')
 
-    if weblogo:
-        for muscle_or_trimal_file in os.listdir(output_dir):
-            if muscle_or_trimal_file.endswith('_muscled_domain.fasta'):
-                muscle_path = os.path.join(output_dir, muscle_or_trimal_file)
-                weblogo_muscle_name = muscle_or_trimal_file.replace('_muscled_domain.fasta', '_muscled_domain.pdf')
-                output_weblogo_muscle = os.path.join(output_dir, weblogo_muscle_name)
-                print('-' * len(weblogo_muscle_name) * 2)
-                print(f'Running: weblogo -f {muscle_path} -D fasta -o {output_weblogo_muscle} -F pdf --resolution 400')
-                running_weblogo_for_muscle = f'weblogo -f {muscle_path} -D fasta -o {output_weblogo_muscle} -F pdf --resolution 400'
-                subprocess.run(running_weblogo_for_muscle, shell = True, check = True)
-                print(f'Successfully ran Weblogo for {weblogo_muscle_name} in directory: {output_dir}')
-                print('-' * len(weblogo_muscle_name) * 2)
-                print('\n')
+        if weblogo:
+            for muscle_or_trimal_file in os.listdir(species_folder_path):
+                if muscle_or_trimal_file.endswith('_muscled_domain.fasta'):
+                    muscle_path = os.path.join(species_folder_path, muscle_or_trimal_file)
+                    weblogo_muscle_name = muscle_or_trimal_file.replace('_muscled_domain.fasta', '_muscled_domain.pdf')
+                    output_weblogo_muscle = os.path.join(species_folder_path, weblogo_muscle_name)
+                    print('-' * len(weblogo_muscle_name) * 2)
+                    print(f'Running: weblogo -f {muscle_path} -D fasta -o {output_weblogo_muscle} -F pdf --resolution 400')
+                    running_weblogo_for_muscle = f'weblogo -f {muscle_path} -D fasta -o {output_weblogo_muscle} -F pdf --resolution 400'
+                    subprocess.run(running_weblogo_for_muscle, shell = True, check = True)
+                    print(f'Successfully ran Weblogo for {weblogo_muscle_name} in directory: {species_folder_path}')
+                    print('-' * len(weblogo_muscle_name) * 2)
+                    print('\n')
 
-            elif muscle_or_trimal_file.endswith('_trimal_muscled_domain.fasta'):
-                trimal_path = os.path.join(output_dir, muscle_or_trimal_file)
-                weblogo_trimal_name = muscle_or_trimal_file.replace('_trimal_muscled_domain.fasta', '_trimal_muscled_domain.pdf')
-                output_weblogo_trimal = os.path.join(output_dir, weblogo_trimal_name)
-                print('-' * len(weblogo_trimal_name) * 2)
-                print(f'Running: weblogo -f {trimal_path} -D fasta -o {output_weblogo_trimal} -F pdf --resolution 400')
-                running_weblogo_for_trimal = f'weblogo -f {trimal_path} -D fasta -o {output_weblogo_trimal} -F pdf --resolution 400'
-                subprocess.run(running_weblogo_for_trimal, shell = True, check = True)
-                print(f'Successfully ran Weblogo for {weblogo_trimal_name} in directory: {output_dir}')
-                print('-' * len(weblogo_trimal_name) * 2)
-                print('\n')
+                elif muscle_or_trimal_file.endswith('_trimal_muscled_domain.fasta'):
+                    trimal_path = os.path.join(species_folder_path, muscle_or_trimal_file)
+                    weblogo_trimal_name = muscle_or_trimal_file.replace('_trimal_muscled_domain.fasta', '_trimal_muscled_domain.pdf')
+                    output_weblogo_trimal = os.path.join(species_folder_path, weblogo_trimal_name)
+                    print('-' * len(weblogo_trimal_name) * 2)
+                    print(f'Running: weblogo -f {trimal_path} -D fasta -o {output_weblogo_trimal} -F pdf --resolution 400')
+                    running_weblogo_for_trimal = f'weblogo -f {trimal_path} -D fasta -o {output_weblogo_trimal} -F pdf --resolution 400'
+                    subprocess.run(running_weblogo_for_trimal, shell = True, check = True)
+                    print(f'Successfully ran Weblogo for {weblogo_trimal_name} in directory: {species_folder_path}')
+                    print('-' * len(weblogo_trimal_name) * 2)
+                    print('\n')
 
 def main():
     # Initialize the argument parser
