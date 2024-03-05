@@ -20,17 +20,17 @@ Go into 'HMMerME' folder
 
 ### Running 'HMMerME'
 
-Main code will be in 'run.py'
+Main code will be in `run.py`
 
-'run.py' takes in 2 required arguments: '--input' and '--db'
+`run.py` takes in 2 required arguments: `--input` and `--db`
 
-'--input' will target the 'Input' directory that has your '.fasta' and '_clean.fasta' files
+`--input` will target the `Input` directory that has your `.fasta` and `_clean.fasta` files
 
-'--db' will target the 'Database' directory that has your '.hmm' files, called after an HMM search
+`--db` will target the 'Database' directory that has your '.hmm' files, called after an HMM search
 
-'--CPU' is one of the options that utilizes a specific core. If not called, default is set to use 2 cores (4 threads)
+`--CPU` is one of the options that utilizes a specific core. If not called, default is set to use 2 cores (4 threads)
 
-'--visualization' is another option that calls 'weblogo' and 'pymsaviz' to visualize your data
+`--visualization` is another option that calls 'weblogo' and 'pymsaviz' to visualize your data
 
 To run the command, go into the 'HMMerME' directory as the current working directory as simply type this:
 
