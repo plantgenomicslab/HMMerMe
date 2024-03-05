@@ -323,7 +323,7 @@ def main():
     # Add arguments for input folder, database folder, and number of CPUs
     parser.add_argument("--input", help="Path to the input folder", required=True)
     parser.add_argument("--db", help="Path to the database folder", required=True)
-    parser.add_argument("--CPU", help="Number of CPUs", default=2, type=int, required=True)
+    parser.add_argument("--CPU", help="Number of CPUs", default=2, type=int, required=False)
     parser.add_argument("--logging", help="Enable logging", action='store_true', required=False)
     parser.add_argument("--weblogo", help="Draw weblogo using muscled/aligned sequences", action='store_true')
     
