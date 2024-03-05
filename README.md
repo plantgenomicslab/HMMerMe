@@ -1,3 +1,48 @@
+### Create 'GPCR' environment with the follwoing software tools installed
+
+`conda create -y -n GPCR -c bioconda -c conda-forge python=3.11 seqkit hmmer muscle=3.8.1551 weblogo transdecoder easel diamond trimal pymsaviz`
+
+Activating said environment
+
+`conda activate GPCR`
+
+### Download and utlize 'HMMerME'
+
+In your working directory of choice
+
+`git clone git@github.com:plantgenomicslab/HMMerMe.git`
+
+If you have not created an SSH key, please do so:
+
+Go into 'HMMerME' folder
+
+`$cd HMMerME`
+
+### Running 'HMMerME'
+
+Main code will be in `run.py`
+
+`run.py` takes in 2 required arguments: `--input` and `--db`
+
+`--input` will target the `Input` directory that has your `.fasta` and `_clean.fasta` files
+
+`--db` will target the 'Database' directory that has your '.hmm' files, called after an HMM search
+
+`--CPU` is one of the options that utilizes a specific core. If not called, default is set to use 2 cores (4 threads)
+
+`--visualization` is another option that calls 'weblogo' and 'pymsaviz' to visualize your data
+
+To run the command, go into the 'HMMerME' directory as the current working directory as simply type this:
+
+`python run.py --input Input/ --db Database/ [OPTIONS --CPU, --visualization]`
+
+Remember, if you want a weblogo and visualized aligned sequences, run `--visualization`
+
+`python run.py --input Input/ --db Database/ --visualization`
+
+
+###### DR. YIMS ######
+
 ## GPCR identification
 
 ### Environment creation
