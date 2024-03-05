@@ -314,9 +314,9 @@ def run_hmm(directory, cpu_count, database_path, visualization):
 
         if visualization:
             for muscle_or_trimal_file in os.listdir(species_folder_path):
-                if muscle_or_trimal_file.endswith('_muscled_trimal_domain.fasta'):
+                if muscle_or_trimal_file.endswith('.afa'):
                     muscle_path = os.path.join(species_folder_path, muscle_or_trimal_file)
-                    weblogo_muscle_name = muscle_or_trimal_file.replace('_muscled_trimal_domain.fasta', '_muscled_trimal_domain.pdf')
+                    weblogo_muscle_name = muscle_or_trimal_file.replace('.afa', '.pdf')
                     output_weblogo_muscle = os.path.join(species_folder_path, weblogo_muscle_name)
                     print('-' * 144)
                     print(f'Running: weblogo -f {muscle_path} -D fasta -o {output_weblogo_muscle} -F pdf --resolution 400')
@@ -325,7 +325,7 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                     print(f'Successfully ran Weblogo for {weblogo_muscle_name} in directory: {species_folder_path}')
                     print('-' * 144)
                     print('\n')
-
+                    
                 elif muscle_or_trimal_file.endswith('.afa'):
                     pymsaviz_path = os.path.join(species_folder_path, muscle_or_trimal_file)
                     pymsaviz_name = muscle_or_trimal_file.replace('.afa', '.png')
