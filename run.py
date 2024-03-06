@@ -310,10 +310,11 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 seqkit_file_path = os.path.join(species_folder_path, seqkit_fasta_files)
                 running_sed = f"sed -i 's/:.//g' {seqkit_file_path}"
                 subprocess.run(running_sed, shell = True, check = True)
-
+#
     #species_dict = {}
     #for species_file in os.listdir(output_dir):
     #    if species_file.endswith('_domain.fasta')
+                #
 
         if visualization:
             for muscle_or_trimal_file in os.listdir(species_folder_path):
