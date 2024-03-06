@@ -104,6 +104,7 @@ The `muscled_combined_domain.afa`files combines the sequence alignments of the H
 Finally `.pdf` and `.png` files are made. If you called `--visualziation` it will call Weblogo v3 (Crooks et al 2004) and Pymsaviz (https://pypi.org/project/pyMSAviz/) to create the `.pdf` and `.png` files respectively. Here are some visualization:
 
 [AaegyptiLVPWY_Adipokinetic_Corazonin_muscled_combined_trimal_domain.pdf](https://github.com/plantgenomicslab/HMMerMe/files/14514243/AaegyptiLVPWY_Adipokinetic_Corazonin_muscled_combined_trimal_domain.pdf)
+![image](https://github.com/plantgenomicslab/HMMerMe/assets/907041/e8dc4ad5-a2a2-4a74-8bc5-b99301bc080f)
 
 ![AaegyptiLVPWY_Adipokinetic_Corazonin_muscled_combined_trimal_domain](https://github.com/plantgenomicslab/HMMerMe/assets/137996393/75e025cf-6219-40db-9465-78a11d80f7c4)
 
