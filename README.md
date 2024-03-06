@@ -52,11 +52,47 @@ python run.py --input Input/ --db Database/ --visualization
 
 Expected input and output formats are detailed below, demonstrating the workflow from input fasta files and HMM profiles to the generation of various output files, including homology results, domain-specific lists, and visualizations of aligned sequences.
 
-## Overview
+## Output Files Overview
 
-This section elucidates how `.hmm` profile files in the `Database` directory and species fasta files in the `Input` directory work together within `run.py` to identify homologous sequences. It includes a detailed explanation of the output files generated post-analysis, their formats, and the significance of each file type in the context of HMM analysis.
+The analysis generates several types of output files, outlined as follows:
 
-### Custom Database Creation
+- `{Species}.hmm_results`: Contains the results of homology searches with significant E-value scores.
+- `{Species}_{Homology_domain}.list`: Lists identified domain genes within a species.
+- `{Species}_{Homology_domain}.fasta`: Sequences of domain genes.
+- `{Species}_{Homology_domain}_domain.bed`: BED file indicating the location of domain genes.
+- `{Species}_{Homology_domain}_domain.fasta`: Fasta sequences derived from BED locations.
+- `{Species}_conflict.list`: Lists genes with conflicting domains.
+- `{Species}_conflict.fasta`: Sequences of genes with conflicts domains.
+- `{Species}_{Homology_domain}_muslced_domain.fa`: Aligned sequences via Muscle.
+- `{Species}_{Homology_domain}_muscled_trimal_domain.fa`: Trimmed alignments to remove excessive gaps.
+- `{Species}_{Homology_domain}_muscled_combined_domain.afa`: Combined alignment files.
+- `{Species}_{Homology_domain}_muscled_combined_trimal_domain.afa`: Combined and trimmed alignment files.
+- `{Species}_counts.txt`: Counts of domain genes identified.
+- the `counts.txt`. This file will give you the total amount of Domain genes that were distinguished from your `.hmm_search` file.
+| AaegyptiLVPWY | RYamideLuqin | Prothoracicotropichormone | SIfamide | CCHamide1 |
+|---------------|--------------|---------------------------|----------|-----------|
+| AaegyptiLVPWY | 1            | 3                         | 1        | 1         |
+- Visualization files: `.pdf` and `.png` formats for visual representation.
+- `.pdf` and `.png` files are made. If you called `--visualziation` it will call Weblogo v3 (Crooks et al 2004) and Pymsaviz (https://pypi.org/project/pyMSAviz/) to create the `.pdf` and `.png` files respectively. Here are some visualization:
+[AaegyptiLVPWY_Adipokinetic_Corazonin_muscled_combined_trimal_domain.pdf](https://github.com/plantgenomicslab/HMMerMe/files/14514243/AaegyptiLVPWY_Adipokinetic_Corazonin_muscled_combined_trimal_domain.pdf)
+![image](https://github.com/plantgenomicslab/HMMerMe/assets/907041/e8dc4ad5-a2a2-4a74-8bc5-b99301bc080f)
+![AaegyptiLVPWY_Adipokinetic_Corazonin_muscled_combined_trimal_domain](https://github.com/plantgenomicslab/HMMerMe/assets/137996393/75e025cf-6219-40db-9465-78a11d80f7c4)
+
+
+### Detailed Explanation
+
+The process begins within the `Database` directory, hosting `.hmm` profile files crucial for identifying homology between your query sequences and extensive sequence databases. The `Input` directory should contain species-specific fasta or fas files. This setup enables `run.py` to discover homologous sequences between your fasta files and the predefined HMM profiles.
+
+Consider the example of the species AaegyptiLVPWY, with its fasta file containing 28,392 genes. The database directory houses 49 HMM profiles, utilized by `run.py` to find potential homologous matches. The output files provide a comprehensive set of data ranging from homology results to detailed lists and sequences of identified domain genes, including handling conflicts where domain genes share sequences but have different names.
+
+Furthermore, the analysis details the alignment of sequences via the Muscle program and the subsequent trimming of alignments to remove excess gaps, culminating in a set of combined alignment files. The `--visualization` option, if utilized, employs Weblogo and Pymsaviz tools to create graphical representations of the aligned sequences, enhancing the interpretability of the results.
+
+## Additional features to enhance the analysis include:
+- An `--output` option for specifying the directory where output files will be stored, defaulting to `output`.
+- A `--CPU` option to set the number of cores used, with a default value of 2.
+- An  `--visualization` option to enable or disable WebLogo generation, which is disabled by default for streamlined analysis.
+
+## Custom Database Creation
 
 For custom database creation, follow the steps below using `muscle` for alignment, `trimal` for trimming alignments based on conservation and gap thresholds, `esl-reformat` for format conversion, and `hmmbuild` to construct the HMM profile:
 
@@ -67,4 +103,3 @@ esl-reformat stockholm {Homology_domain}_trimmed.aln > {Homology_domain}.sto
 hmmbuild {Homology_domain}.hmm {Homology_domain}.sto
 ```
 
-These instructions guide you through setting up your analysis environment, executing the HMMerMe tool, and understanding the input and output files crucial for HMM analysis, offering a comprehensive toolkit for homology detection.
