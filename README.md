@@ -92,7 +92,7 @@ The `muslced_domain.fa` files are simply aligned fasta sequences using the Muscl
 
 The `muscled_combined_domain.afa`files combines the sequence alignments of the HMM search files in the form of `.afa` files. In turn, `run.py` will try to combine your `muscled_combined_domain.fa` and the `{Homology_domain}.afa` files in the `Database_alignment` directory if a match between the Homology name is found. the 'muscled_combined_trimal_domain.afa' simply calls trimal to remove unecessary gaps.
 
-Finally `.pdf` and `.png` files are made. If you called `--visualziation` it will call weblogo and Pymsaviz to create the `.pdf` and `.png` files respectively. Here are some visualization:
+Finally `.pdf` and `.png` files are made. If you called `--visualziation` it will call Weblogo v3 (Crooks et al 2004) and Pymsaviz (https://pypi.org/project/pyMSAviz/) to create the `.pdf` and `.png` files respectively. Here are some visualization:
 
 [AaegyptiLVPWY_Adipokinetic_Corazonin_muscled_combined_trimal_domain.pdf](https://github.com/plantgenomicslab/HMMerMe/files/14514243/AaegyptiLVPWY_Adipokinetic_Corazonin_muscled_combined_trimal_domain.pdf)
 
