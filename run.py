@@ -264,10 +264,10 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 print('\n')
 
         for fasta_file in os.listdir(species_folder_path):
-            if fasta_file.endswith('_domain.fasta') and not fasta_file.endswith('_conflict_domain.fasta') and not fasta_file.endswith('_muscled_domain.fasta'):
+            if fasta_file.endswith('_domain.fasta'):
                 fasta_file_path = os.path.join(species_folder_path, fasta_file)
                 #fasta_name = fasta_file.replace('_domain.fasta', '_muscled_domain.fasta')
-                fasta_name = f'{fasta_file.split("_domain.fasta")[0]}_Muscled_Domain.fasta'
+                fasta_name = f'{fasta_file.split("_domain.fasta")[0]}_muscled_domain.fa'
                 output_muscled_file_name = os.path.join(species_folder_path, fasta_name)
                 print('-' * 144)
                 print(f'Running: muscle -in {fasta_file_path} -out {output_muscled_file_name}')
@@ -278,11 +278,11 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 print('\n')   
 
         for fasta in os.listdir(species_folder_path):
-            if fasta.endswith('_Muscled_Domain.fasta') and not fasta.endswith('_muscled_muscled_domain.fasta') and not fasta.endswith('_muscled_trimal_domain.fasta'):
+            if fasta.endswith('_muscled_domain.fa'):
                 for k, v in afa_files_dict.items():
                     if k in fasta:
                         #fasta_file_new_name = fasta.replace("_muscled_domain.fasta", "_muscled_combined_domain.afa")
-                        fasta_file_new_name = f'{fasta.split("_Muscled_Domain.fasta")[0]}_Muscled_Combined_Domain.afa'
+                        fasta_file_new_name = f'{fasta.split("_muscled_domain.fa")[0]}_muscled_combined_domain.afa'
                         print('-' * 144)
                         print(f'Running: muscle -profile -in1 {v} -in2 {os.path.join(species_folder_path, fasta)} -out {os.path.join(species_folder_path, fasta_file_new_name)}')
                         running_profile = f'muscle -profile -in1 {v} -in2 {os.path.join(species_folder_path, fasta)} -out {os.path.join(species_folder_path, fasta_file_new_name)}'
@@ -292,10 +292,10 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                         print('\n')
 
         for muscled_file in os.listdir(species_folder_path):
-            if muscled_file.endswith('_Muscled_Domain.fasta') and not muscled_file.endswith('_muscled_muscled_domain.fasta') and not muscled_file.endswith('_muscled_trimal_domain.fasta'):
+            if muscled_file.endswith('_muscled_domain.fa'):
                 muscled_file_path = os.path.join(species_folder_path, muscled_file)
                 #trimal_name = muscled_file.replace('_muscled_domain.fasta', '_muscled_trimal_domain.fasta')
-                trimal_name = f'{muscled_file.split("_Muscled_Domain.fasta")[0]}_Muscled_Trimal_Domain.fasta'
+                trimal_name = f'{muscled_file.split("_muscled_domain.fa")[0]}_muscled_trimal_domain.fa'
                 output_trimal_file_name = os.path.join(species_folder_path, trimal_name)
                 print('-' * 144)
                 print(f'Runnning: trimal -in {muscled_file_path} -out {output_trimal_file_name} -gt 0.50 -cons 60')
@@ -306,7 +306,7 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 print('\n')
 
         for seqkit_fasta_files in os.listdir(species_folder_path):
-            if seqkit_fasta_files.endswith('.fasta'):
+            if seqkit_fasta_files.endswith('.fasta') and seqkit_fasta_files.endswith('.fa'):
                 seqkit_file_path = os.path.join(species_folder_path, seqkit_fasta_files)
                 running_sed = f"sed -i 's/:.//g' {seqkit_file_path}"
                 subprocess.run(running_sed, shell = True, check = True)
