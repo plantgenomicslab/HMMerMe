@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, argparse, subprocess, logging, re
+import os, argparse, subprocess, logging, re, shutil
 
 def process_fasta_files(directory):
     """
@@ -66,6 +66,8 @@ def run_hmm(directory, cpu_count, database_path, visualization):
     Processes each cleaned FASTA file in the input folder using HMMER to search against a database.
     """
     output_dir = "output"
+    #if os.path.exists(output_dir):  
+    #    shutil.rmtree(output_dir)
     os.makedirs(output_dir, exist_ok=True)  # Create output directory if it doesn't exist
 
     database_alignment = 'Database_alignment'
@@ -232,7 +234,6 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 name = list_file.replace('.list', '')
                 output_file_name = f'{list_file.split(".list")[0]}.fasta'
                 output_file_name_path = os.path.join(species_folder_path, output_file_name)
-
                 for clean_files in os.listdir(directory):
                     if clean_files.endswith('_clean.fasta') and clean_files.startswith(name.split('_')[0]):
                         clean_fasta_path = os.path.join(directory, clean_files)
@@ -250,7 +251,6 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 name = list_file.replace('_domain.bed', '')
                 output_file_name = f'{list_file.split("_domain.bed")[0]}_domain.fasta'
                 output_file_name_path = os.path.join(species_folder_path, output_file_name)  
-
                 for clean_files in os.listdir(directory):
                     if clean_files.endswith('_clean.fasta') and clean_files.startswith(name.split('_')[0]):
                         clean_fasta_path = os.path.join(directory, clean_files)
@@ -264,9 +264,10 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 print('\n')
 
         for fasta_file in os.listdir(species_folder_path):
-            if fasta_file.endswith('_domain.fasta') and not fasta_file.endswith('_conflict_domain.fasta'):
+            if fasta_file.endswith('_domain.fasta') and not fasta_file.endswith('_conflict_domain.fasta') and not fasta_file.endswith('_muscled_domain.fasta'):
                 fasta_file_path = os.path.join(species_folder_path, fasta_file)
-                fasta_name = fasta_file.replace('_domain.fasta', '_muscled_domain.fasta')
+                #fasta_name = fasta_file.replace('_domain.fasta', '_muscled_domain.fasta')
+                fasta_name = f'{fasta_file.split("_domain.fasta")[0]}_Muscled_Domain.fasta'
                 output_muscled_file_name = os.path.join(species_folder_path, fasta_name)
                 print('-' * 144)
                 print(f'Running: muscle -in {fasta_file_path} -out {output_muscled_file_name}')
@@ -277,10 +278,11 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 print('\n')   
 
         for fasta in os.listdir(species_folder_path):
-            if fasta.endswith('_muscled_domain.fasta'):
+            if fasta.endswith('_Muscled_Domain.fasta') and not fasta.endswith('_muscled_muscled_domain.fasta') and not fasta.endswith('_muscled_trimal_domain.fasta'):
                 for k, v in afa_files_dict.items():
                     if k in fasta:
-                        fasta_file_new_name = fasta.replace("_muscled_domain.fasta", "_muscled_combined_domain.afa")
+                        #fasta_file_new_name = fasta.replace("_muscled_domain.fasta", "_muscled_combined_domain.afa")
+                        fasta_file_new_name = f'{fasta.split("_Muscled_Domain.fasta")[0]}_Muscled_Combined_Domain.afa'
                         print('-' * 144)
                         print(f'Running: muscle -profile -in1 {v} -in2 {os.path.join(species_folder_path, fasta)} -out {os.path.join(species_folder_path, fasta_file_new_name)}')
                         running_profile = f'muscle -profile -in1 {v} -in2 {os.path.join(species_folder_path, fasta)} -out {os.path.join(species_folder_path, fasta_file_new_name)}'
@@ -290,9 +292,10 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                         print('\n')
 
         for muscled_file in os.listdir(species_folder_path):
-            if muscled_file.endswith('_muscled_domain.fasta'):
+            if muscled_file.endswith('_Muscled_Domain.fasta') and not muscled_file.endswith('_muscled_muscled_domain.fasta') and not muscled_file.endswith('_muscled_trimal_domain.fasta'):
                 muscled_file_path = os.path.join(species_folder_path, muscled_file)
-                trimal_name = muscled_file.replace('_muscled_domain.fasta', '_muscled_trimal_domain.fasta')
+                #trimal_name = muscled_file.replace('_muscled_domain.fasta', '_muscled_trimal_domain.fasta')
+                trimal_name = f'{muscled_file.split("_Muscled_Domain.fasta")[0]}_Muscled_Trimal_Domain.fasta'
                 output_trimal_file_name = os.path.join(species_folder_path, trimal_name)
                 print('-' * 144)
                 print(f'Runnning: trimal -in {muscled_file_path} -out {output_trimal_file_name} -gt 0.50 -cons 60')
@@ -325,8 +328,6 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                     print(f'Successfully ran Weblogo for {weblogo_muscle_name} in directory: {species_folder_path}')
                     print('-' * 144)
                     print('\n')
-                    
-                elif muscle_or_trimal_file.endswith('.afa'):
                     pymsaviz_path = os.path.join(species_folder_path, muscle_or_trimal_file)
                     pymsaviz_name = muscle_or_trimal_file.replace('.afa', '.png')
                     output_pymsaviz = os.path.join(species_folder_path, pymsaviz_name)

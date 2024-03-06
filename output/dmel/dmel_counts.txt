@@ -1,0 +1,2 @@
+dmel	AllatostatinC	AllatostatinB	AllatostatinA
+dmel	4	1	2	
