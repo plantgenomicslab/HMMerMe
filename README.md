@@ -15,7 +15,6 @@ conda activate HMM
 ```
 
 ### Installing Conda
-
 For Conda installation, visit the following [link](https://docs.anaconda.com/free/miniconda/).
 
 ### Setting Up 'HMMer'
@@ -34,12 +33,12 @@ cd HMMerMe
 
 ## Executing 'HMMerMe'
 
-The main script is `run.py`, which requires two arguments: `--input` for the input directory and `--db` for the database directory. Optional arguments include `--CPU` to specify the number of cores (default is 2) and `--visualization` to generate data visualizations.
+The main script is `run.py`, which requires two arguments: `--input` for the input directory which includes {species_name}.fasta and `--db` for the database directory which includes {domain_name}.hmm. Optional arguments include `--CPU` to specify the number of cores (default is 2) and `--visualization` to generate data visualizations.
 
 Execute the script as follows:
 
 ```bash
-python run.py --input Input/ --db Database/ [OPTIONS --CPU, --visualization]
+python run.py --input Input/ --db Database/ [OPTIONS --CPU, --output, --visualization]
 ```
 
 For data visualization, include the `--visualization` flag:
@@ -47,15 +46,18 @@ For data visualization, include the `--visualization` flag:
 ```bash
 python run.py --input Input/ --db Database/ --visualization
 ```
+## Additional features to enhance the analysis include:
+- An `--output` option for specifying the directory where output files will be stored, defaulting to `output`.
+- A `--CPU` option to set the number of cores used, with a default value of 2.
+- An  `--visualization` option to enable or disable WebLogo generation, which is disabled by default for streamlined analysis.
 
-### Input and Output Management
-
-Expected input and output formats are detailed below, demonstrating the workflow from input fasta files and HMM profiles to the generation of various output files, including homology results, domain-specific lists, and visualizations of aligned sequences.
+## Input file
+The required format for input sequences is the FASTA format. The system is designed to accommodate multiple FASTA files in same directory simultaneously.
+For the database, the expected file format is HMM, and similarly, the system supports processing multiple HMM files in same directory concurrently.
 
 ## Output Files Overview
 
 The analysis generates several types of output files, outlined as follows:
-
 - `{Species}.hmm_results`: Contains the results of homology searches with significant E-value scores.
 - `{Species}_{Homology_domain}.list`: Lists identified domain genes within a species.
 - `{Species}_{Homology_domain}.fasta`: Sequences of domain genes.
@@ -80,22 +82,14 @@ The analysis generates several types of output files, outlined as follows:
 
 
 ### Detailed Explanation
-
 The process begins within the `Database` directory, hosting `.hmm` profile files crucial for identifying homology between your query sequences and extensive sequence databases. The `Input` directory should contain species-specific fasta or fas files. This setup enables `run.py` to discover homologous sequences between your fasta files and the predefined HMM profiles.
 
 Consider the example of the species AaegyptiLVPWY, with its fasta file containing 28,392 genes. The database directory houses 49 HMM profiles, utilized by `run.py` to find potential homologous matches. The output files provide a comprehensive set of data ranging from homology results to detailed lists and sequences of identified domain genes, including handling conflicts where domain genes share sequences but have different names.
 
 Furthermore, the analysis details the alignment of sequences via the Muscle program and the subsequent trimming of alignments to remove excess gaps, culminating in a set of combined alignment files. The `--visualization` option, if utilized, employs Weblogo and Pymsaviz tools to create graphical representations of the aligned sequences, enhancing the interpretability of the results.
 
-## Additional features to enhance the analysis include:
-- An `--output` option for specifying the directory where output files will be stored, defaulting to `output`.
-- A `--CPU` option to set the number of cores used, with a default value of 2.
-- An  `--visualization` option to enable or disable WebLogo generation, which is disabled by default for streamlined analysis.
-
 ## Custom Database Creation
-
 For custom database creation, follow the steps below using `muscle` for alignment, `trimal` for trimming alignments based on conservation and gap thresholds, `esl-reformat` for format conversion, and `hmmbuild` to construct the HMM profile:
-
 ```bash
 muscle -in {Homology_domain}.fasta -out {Homology_domain}.aln -clw
 trimal -in {Homology_domain}.aln -out {Homology_domain}_trimmed.aln -gt 0.50 -cons 60
@@ -103,3 +97,5 @@ esl-reformat stockholm {Homology_domain}_trimmed.aln > {Homology_domain}.sto
 hmmbuild {Homology_domain}.hmm {Homology_domain}.sto
 ```
 
+## Transcripts input
+At present, our system exclusively supports protein sequences. For those interested in analyzing transcript sequences, we recommend utilizing TransDecoder, available at https://github.com/TransDecoder/TransDecoder/wiki.
