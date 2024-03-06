@@ -71,9 +71,11 @@ The analysis generates several types of output files, outlined as follows:
 - `{Species}_{Homology_domain}_muscled_combined_trimal_domain.afa`: Combined and trimmed alignment files.
 - `{Species}_counts.txt`: Counts of domain genes identified.
 - the `counts.txt`. This file will give you the total amount of Domain genes that were distinguished from your `.hmm_search` file.
+  
 | AaegyptiLVPWY | RYamideLuqin | Prothoracicotropichormone | SIfamide | CCHamide1 |
 |---------------|--------------|---------------------------|----------|-----------|
 | AaegyptiLVPWY | 1            | 3                         | 1        | 1         |
+
 - Visualization files: `.pdf` and `.png` formats for visual representation.
 - `.pdf` and `.png` files are made. If you called `--visualziation` it will call Weblogo v3 (Crooks et al 2004) and Pymsaviz (https://pypi.org/project/pyMSAviz/) to create the `.pdf` and `.png` files respectively. Here are some visualization:
 [AaegyptiLVPWY_Adipokinetic_Corazonin_muscled_combined_trimal_domain.pdf](https://github.com/plantgenomicslab/HMMerMe/files/14514243/AaegyptiLVPWY_Adipokinetic_Corazonin_muscled_combined_trimal_domain.pdf)
