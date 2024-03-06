@@ -21,7 +21,7 @@ If you have not created an SSH key, please do so:
 
 Go into 'HMM' folder
 
-`$cd HMMerME`
+`cd HMMerME`
 
 
 ## Running 'HMMerME'
