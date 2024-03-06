@@ -304,6 +304,16 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 print(f'Successfully ran Trimal for {trimal_name} in directory: {species_folder_path}')
                 print('-' * 144)
                 print('\n')
+            elif muscled_file.endswith('_muscled_combined_domain.afa'):
+                combined_muscled_file_path = os.path.join(species_folder_path, muscled_file)
+                trimal_combined_name = f'{combined_muscled_file_path.split("_muscled_combined_domain.afa")[0]}_muscled_combined_trimal_domain.afa'
+                print('-' * 144)
+                print(f'Runnning: trimal -in {combined_muscled_file_path} -out {trimal_combined_name} -gt 0.50 -cons 60')
+                running_trimal = f'trimal -in {combined_muscled_file_path} -out {trimal_combined_name} -gt 0.50 -cons 60'
+                subprocess.run(running_trimal, shell = True, check = True)
+                print(f'Successfully ran Trimal for {trimal_combined_name} in directory: {species_folder_path}')
+                print('-' * 144)
+                print('\n')            
 
         for seqkit_fasta_files in os.listdir(species_folder_path):
             if seqkit_fasta_files.endswith('.fasta') and seqkit_fasta_files.endswith('.fa'):
@@ -318,7 +328,7 @@ def run_hmm(directory, cpu_count, database_path, visualization):
 
         if visualization:
             for muscle_or_trimal_file in os.listdir(species_folder_path):
-                if muscle_or_trimal_file.endswith('.afa'):
+                if muscle_or_trimal_file.endswith('_muscled_combined_trimal_domain.afa'):
                     muscle_path = os.path.join(species_folder_path, muscle_or_trimal_file)
                     weblogo_muscle_name = muscle_or_trimal_file.replace('.afa', '.pdf')
                     output_weblogo_muscle = os.path.join(species_folder_path, weblogo_muscle_name)
