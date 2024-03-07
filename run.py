@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, argparse, subprocess, logging, re, shutil
+from alive_progress import alive_bar; import time
 
 def process_fasta_files(directory):
     """
@@ -24,7 +25,6 @@ def process_fasta_files(directory):
         # Using subprocess.Popen for commands that involve redirections
             with open(clean_path, "w") as outfile:
                 subprocess.run(["awk", "{print $1}", input_path], stdout=outfile, check=True)
-
 
             seqkit_command = f"seqkit seq {clean_path} -o {clean_fasta_path}"
             subprocess.run(seqkit_command, shell=True, check=True)
@@ -61,17 +61,16 @@ def list_files(directory):
     subprocess.run(f"hmmpress -f {database_path}", shell=True, check=True)
     return database_path
 
-def run_hmm(directory, cpu_count, database_path, visualization):
+def run_hmm(directory, cpu_count, database_path, output, E, dome, visualization):
     """
     Processes each cleaned FASTA file in the input folder using HMMER to search against a database.
     """
-    output_dir = "output"
+    output_dir = output
     #if os.path.exists(output_dir):  
     #    shutil.rmtree(output_dir)
     os.makedirs(output_dir, exist_ok=True)  # Create output directory if it doesn't exist
 
     database_alignment = 'Database_alignment'
-
     for filename in os.listdir(directory):
         if filename.endswith("_clean.fasta"):
             base_name = filename.rsplit('_clean.fasta', 1)[0]
@@ -81,14 +80,21 @@ def run_hmm(directory, cpu_count, database_path, visualization):
 
             output_file_path = os.path.join(base_output_dir, f"{base_name}.hmm_results")
             logging.info(f"Running HMMER for {filename}")
-            hmm_command = ["hmmsearch", "--noali", "--domE", "1e-10", "--domtblout", output_file_path, "-E", "1e-10", "--cpu", str(cpu_count), database_path, input_path]
-            # Run hmmsearch command and log the result
-            try:
-                result = subprocess.run(hmm_command, check=True, capture_output=True, text=True)
-                logging.info(result.stdout)
-            except subprocess.CalledProcessError as e:
-                logging.error(f"Error running HMMER: {e}")
-                logging.error(e.stderr)
+            #running_hmm_command = f'hmmsearch --noali --domE {dome} --domtblout, {output_file_path} -E {E} --cpu {str(cpu_count), database_path, input_path}'
+            #print(f'Running HMM command: {running_hmm_command}')
+
+            with alive_bar(enrich_print=False) as bar:
+                hmm_command = ["hmmsearch", "--noali", "--domE", dome, "--domtblout", output_file_path, "-E", E, "--cpu", str(cpu_count), database_path, input_path]
+                # Run hmmsearch command and log the result
+                try:
+                    print('\n')
+                    print(f'Processing HMMsearch using {dome} (E-value) to report domains and {E} (E-value) to report sequences')
+                    result = subprocess.run(hmm_command, check=True, capture_output=True, text=True)
+                    logging.info(result.stdout)
+                except subprocess.CalledProcessError as e:
+                    logging.error(f"Error running HMMER: {e}")
+                    logging.error(e.stderr)
+                bar()
 
     afa_files_dict = {} #k = Afa file name : v = path to Afa file
     for afa_files in os.listdir(database_alignment):
@@ -158,34 +164,19 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 # Write '{species}_{domain}.list' files
                 for k, v in list_file_dict.items():
                     output_list_file_name = f'{species_name}_{k}.list'
-                    print('-' * 144)
-                    print(f'Preparing to Write in: {output_list_file_name}')
-                    print('\n')
                     with open(os.path.join(species_folder_path, output_list_file_name), 'w') as writing_list_output_file:
                         for genes in v:
                             writing_list_output_file.write(f'{genes}\n')
-                        print(f'Successfully written your {output_list_file_name} in directory: {species_folder_in_output}')
-                        print('-' * 144)
-                        print('\n')
 
                 # Write '{species}_{domain}_domain.bed' files
                 for k, v in bed_file_dict.items():
                     output_bed_file_name = f'{species_name}_{k}_domain.bed'
-                    print('-' * 144)
-                    print(f'Preparing to write in: {output_bed_file_name}')
-                    print('\n')
                     with open(os.path.join(species_folder_path, output_bed_file_name), 'w') as writing_bed_output_file:
                         for bed_format in v:
                             writing_bed_output_file.write(f'{bed_format}\n')
-                        print(f'Successfully written your {output_bed_file_name} in directory: {species_folder_in_output}')
-                        print('-' * 144)
-                        print('\n')
 
                 # Write '{species}_conflict.list' files
                 output_conflict_file_name = f'{species_name}_conflict.list'
-                print('-' * 144)
-                print(f'Preparing to write in: {output_conflict_file_name}')
-                print('\n')
                 with open(os.path.join(species_folder_path, output_conflict_file_name), 'w') as writing_conflict_output_file:
                     for k, v in conflict_list_dict.items():
                         remove_duplicates = list(set(v))
@@ -193,9 +184,6 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                             conflicting_domain = '\t'.join(remove_duplicates)
                             #writing_conflict_output_file.write(f'{k}\t{conflicting_domain}\n')
                             writing_conflict_output_file.write(f'{k}\n')
-                    print(f'Successfully written your {output_conflict_file_name} in directory: {species_folder_in_output}')
-                    print('-' * 144)
-                    print('\n')
                                       
 ###################################################################################################################
         for conflict_list in os.listdir(output_dir):
@@ -215,7 +203,7 @@ def run_hmm(directory, cpu_count, database_path, visualization):
 ###################################################################################################################
                                 
         for k, v in table_count_dict.items():
-            output_table_file_name = f'{k}_counts.txt'
+            output_table_file_name = f'{k}_counts.tab'
             with open(os.path.join(species_folder_path, output_table_file_name), 'w') as writing_table_file:
                 # Write header
                 writing_table_file.write(k + '\t'.join([''] + list(v.keys())) + '\n')
@@ -225,7 +213,6 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 for count in v.values():
                     writing_table_file.write(f'{count}\t')
                 writing_table_file.write('\n')
-
 
         # Create Fasta files using '.list' against 'clean.fasta'
         for list_file in os.listdir(species_folder_path):
@@ -237,15 +224,19 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 for clean_files in os.listdir(directory):
                     if clean_files.endswith('_clean.fasta') and clean_files.startswith(name.split('_')[0]):
                         clean_fasta_path = os.path.join(directory, clean_files)
-                        print('-' * 144)
-                        print(f'Running: seqkit grep -f {list_file_path} {clean_fasta_path} -o {output_file_name_path}')
-                        print('\n')
                         running_seqkit = f'seqkit grep -f {list_file_path} {clean_fasta_path} -o {output_file_name_path}'
-                        subprocess.run(running_seqkit, shell = True, check = True)
-                print(f'Successfully ran seqkit for {output_file_name} in directory: {species_folder_path}')
-                print('-' * 144)
-                print('\n')
-               
+                        with alive_bar(enrich_print=False) as bar:
+                            try:
+                                print('\n')
+                                print(f'Processing {list_file} and {clean_files}')
+                                seqkit = subprocess.run(running_seqkit, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                                logging.info(seqkit.stdout)
+                            except subprocess.CalledProcessError as e:
+                                logging.error(f'Error running {running_seqkit} as {e}')
+                                logging.erorr(e.stderr)
+                            finally:
+                                bar()
+
             elif list_file.endswith('_domain.bed'):
                 list_file_path = os.path.join(species_folder_path, list_file)
                 name = list_file.replace('_domain.bed', '')
@@ -254,14 +245,18 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 for clean_files in os.listdir(directory):
                     if clean_files.endswith('_clean.fasta') and clean_files.startswith(name.split('_')[0]):
                         clean_fasta_path = os.path.join(directory, clean_files)
-                        print('-' * 144)
-                        print(f'Running: seqkit subseq --update-faidx --bed {list_file_path} {clean_fasta_path} -o {output_file_name_path}')
-                        print('\n')
                         running_seqkit_subseq = f'seqkit subseq --update-faidx --bed {list_file_path} {clean_fasta_path} -o {output_file_name_path}'
-                        subprocess.run(running_seqkit_subseq, shell = True, check = True)
-                print(f'Successfully ran seqkit for {output_file_name} in directory: {species_folder_path}')
-                print('-' * 144)
-                print('\n')
+                        with alive_bar(enrich_print=False) as bar:
+                            try:
+                                print('\n')
+                                print(f'Processing {list_file} and {clean_files}')
+                                seqkit_subseq = subprocess.run(running_seqkit_subseq, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                                logging.info(seqkit_subseq.stdout)
+                            except subprocess.CalledProcessError as e:
+                                logging.error(f'Error running {running_seqkit_subseq} as {e}')
+                                logging.error(e.stderr)
+                            finally:
+                                bar()
 
         for fasta_file in os.listdir(species_folder_path):
             if fasta_file.endswith('_domain.fasta'):
@@ -269,13 +264,18 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 #fasta_name = fasta_file.replace('_domain.fasta', '_muscled_domain.fasta')
                 fasta_name = f'{fasta_file.split("_domain.fasta")[0]}_muscled_domain.fa'
                 output_muscled_file_name = os.path.join(species_folder_path, fasta_name)
-                print('-' * 144)
-                print(f'Running: muscle -in {fasta_file_path} -out {output_muscled_file_name}')
-                running_muscle = f'muscle -in {fasta_file_path} -out {output_muscled_file_name}'
-                subprocess.run(running_muscle, shell = True, check = True)
-                print(f'Successfully ran Muscle for {fasta_name} in directory: {species_folder_path}')
-                print('-' * 144)
-                print('\n')   
+                muscle_command = f'muscle -in {fasta_file_path} -out {output_muscled_file_name}'
+                with alive_bar(enrich_print=False) as bar:
+                    try:
+                        print('\n')
+                        print(f'Processing {fasta_file} for alignment using MUSCLE')
+                        muscle = subprocess.run(muscle_command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                        logging.info(muscle.stdout)
+                    except subprocess.CalledProcessError as e:
+                        logging.error(f'Error running {muscle_command} as {e}')
+                        logging.error(e.stderr)
+                    finally:
+                        bar()
 
         for fasta in os.listdir(species_folder_path):
             if fasta.endswith('_muscled_domain.fa'):
@@ -283,13 +283,18 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                     if k in fasta:
                         #fasta_file_new_name = fasta.replace("_muscled_domain.fasta", "_muscled_combined_domain.afa")
                         fasta_file_new_name = f'{fasta.split("_muscled_domain.fa")[0]}_muscled_combined_domain.afa'
-                        print('-' * 144)
-                        print(f'Running: muscle -profile -in1 {v} -in2 {os.path.join(species_folder_path, fasta)} -out {os.path.join(species_folder_path, fasta_file_new_name)}')
                         running_profile = f'muscle -profile -in1 {v} -in2 {os.path.join(species_folder_path, fasta)} -out {os.path.join(species_folder_path, fasta_file_new_name)}'
-                        subprocess.run(running_profile, shell = True, check = True)
-                        print(f'Successfully ran Muscle profile for {fasta_file_new_name} in directory: {species_folder_path}')
-                        print('-' * 144)
-                        print('\n')
+                        with alive_bar(enrich_print=False) as bar:
+                            try:
+                                print('\n')
+                                print(f'Processing {fasta} to create Combined FASTA file using MUSCLE profile')
+                                muscle_profile = subprocess.run(running_profile, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                                logging.info(muscle_profile.stdout)
+                            except subprocess.CalledProcessError as e:
+                                logging.error(f'Error running {running_profile} as {e}')
+                                logging.error(e.stderr)
+                            finally:
+                                bar()
 
         for muscled_file in os.listdir(species_folder_path):
             if muscled_file.endswith('_muscled_domain.fa'):
@@ -297,29 +302,32 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                 #trimal_name = muscled_file.replace('_muscled_domain.fasta', '_muscled_trimal_domain.fasta')
                 trimal_name = f'{muscled_file.split("_muscled_domain.fa")[0]}_muscled_trimal_domain.fa'
                 output_trimal_file_name = os.path.join(species_folder_path, trimal_name)
-                print('-' * 144)
-                print(f'Runnning: trimal -in {muscled_file_path} -out {output_trimal_file_name} -gt 0.50 -cons 60')
                 running_trimal = f'trimal -in {muscled_file_path} -out {output_trimal_file_name} -gt 0.50 -cons 60'
-                subprocess.run(running_trimal, shell = True, check = True)
-                print(f'Successfully ran Trimal for {trimal_name} in directory: {species_folder_path}')
-                print('-' * 144)
-                print('\n')
+                try:
+                    trimal = subprocess.run(running_trimal, shell = True, check = True)
+                    logging.info(trimal.stdout)
+                except subprocess.CalledProcessError as e:
+                    logging.error(e.stderr)
             elif muscled_file.endswith('_muscled_combined_domain.afa'):
                 combined_muscled_file_path = os.path.join(species_folder_path, muscled_file)
                 trimal_combined_name = f'{combined_muscled_file_path.split("_muscled_combined_domain.afa")[0]}_muscled_combined_trimal_domain.afa'
-                print('-' * 144)
-                print(f'Runnning: trimal -in {combined_muscled_file_path} -out {trimal_combined_name} -gt 0.50 -cons 60')
                 running_trimal = f'trimal -in {combined_muscled_file_path} -out {trimal_combined_name} -gt 0.50 -cons 60'
                 subprocess.run(running_trimal, shell = True, check = True)
-                print(f'Successfully ran Trimal for {trimal_combined_name} in directory: {species_folder_path}')
-                print('-' * 144)
-                print('\n')            
+                try:
+                    trimal = subprocess.run(running_trimal, shell = True, check = True)
+                    logging.info(trimal.stdout)
+                except subprocess.CalledProcessError as e:
+                    logging.error(e.stderr)
 
         for seqkit_fasta_files in os.listdir(species_folder_path):
-            if seqkit_fasta_files.endswith('.fasta') and seqkit_fasta_files.endswith('.fa'):
+            if seqkit_fasta_files.endswith('.fasta') or seqkit_fasta_files.endswith('.fa'):
                 seqkit_file_path = os.path.join(species_folder_path, seqkit_fasta_files)
                 running_sed = f"sed -i 's/:.//g' {seqkit_file_path}"
-                subprocess.run(running_sed, shell = True, check = True)
+                try:
+                    sed = subprocess.run(running_sed, shell = True, check = True)
+                    logging.info(sed.stdout)
+                except subprocess.CalledProcessError as e:
+                    logging.error(e.stderr)
 #
     #species_dict = {}
     #for species_file in os.listdir(output_dir):
@@ -332,23 +340,34 @@ def run_hmm(directory, cpu_count, database_path, visualization):
                     muscle_path = os.path.join(species_folder_path, muscle_or_trimal_file)
                     weblogo_muscle_name = muscle_or_trimal_file.replace('.afa', '.pdf')
                     output_weblogo_muscle = os.path.join(species_folder_path, weblogo_muscle_name)
-                    print('-' * 144)
-                    print(f'Running: weblogo -f {muscle_path} -D fasta -o {output_weblogo_muscle} -F pdf --resolution 400')
-                    running_weblogo_for_muscle = f'weblogo -f {muscle_path} -D fasta -o {output_weblogo_muscle} -F pdf --resolution 400'
-                    subprocess.run(running_weblogo_for_muscle, shell = True, check = True)
-                    print(f'Successfully ran Weblogo for {weblogo_muscle_name} in directory: {species_folder_path}')
-                    print('-' * 144)
-                    print('\n')
+                    running_weblogo_for_muscle = f'weblogo -f {muscle_path} -D fasta -o {output_weblogo_muscle} -F pdf -n 80 --resolution 400'
+                    with alive_bar(enrich_print=False) as bar:
+                        try:
+                            print('\n')
+                            print(f'Processing {weblogo_muscle_name}')
+                            weblogo = subprocess.run(running_weblogo_for_muscle, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                            logging.info(weblogo.stdout)
+                        except subprocess.CalledProcessError as e:
+                            logging.error(f'Error running {running_weblogo_for_muscle} as {e}')
+                            logging.error(e.stderr)
+                        finally:
+                            bar()
+
                     pymsaviz_path = os.path.join(species_folder_path, muscle_or_trimal_file)
                     pymsaviz_name = muscle_or_trimal_file.replace('.afa', '.png')
                     output_pymsaviz = os.path.join(species_folder_path, pymsaviz_name)
-                    print('-' * 144)
-                    print(f'Running: pymsaviz -i {pymsaviz_path} -o {output_pymsaviz} --wrap_length 80 --color_scheme Taylor --show_consensus --show_count')
                     running_weblogo_for_trimal = f'pymsaviz -i {pymsaviz_path} -o {output_pymsaviz} --wrap_length 80 --color_scheme Taylor --show_consensus --show_count'
-                    subprocess.run(running_weblogo_for_trimal, shell = True, check = True)
-                    print(f'Successfully ran Pymsaviz for {pymsaviz_name} in directory: {species_folder_path}')
-                    print('-' * 144)
-                    print('\n')
+                    with alive_bar(enrich_print=False) as bar:
+                        try:
+                            print('\n')
+                            print(f'Processing {pymsaviz_name}')
+                            pymsaviz = subprocess.run(running_weblogo_for_trimal, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+                            logging.info(pymsaviz.stdout)
+                        except subprocess.CalledProcessError as e:
+                            logging.error(f'Error running {running_weblogo_for_trimal} as {e}')
+                            logging.error(e.stderr)
+                        finally:
+                            bar()
 
 def main():
     # Initialize the argument parser
@@ -356,9 +375,12 @@ def main():
     # Add arguments for input folder, database folder, and number of CPUs
     parser.add_argument("--input", help="Path to the input folder", required=True)
     parser.add_argument("--db", help="Path to the database folder", required=True)
+    parser.add_argument("--output", help="Name for your output folder, Default folder name is 'output'.", default='output', required=False)
+    parser.add_argument("--E", help="This is for HMMsearch. Report sequence E-value threshold value is defaulted as 1e-5", default='1e-5', required=False)
+    parser.add_argument("--domE", help="This is for HMMsearch. Report domains E-value threshold value is 1e-10", default='1e-10', required=False)
     parser.add_argument("--CPU", help="Number of CPUs", default=2, type=int, required=False)
     parser.add_argument("--logging", help="Enable logging", action='store_true', required=False)
-    parser.add_argument("--visualization", help="Call Weblogo and Pymsaviz", action='store_true')
+    parser.add_argument("--visualization", help="Call Weblogo and Pymsaviz", action='store_true', required=False)
     
     # Parse the arguments
     args = parser.parse_args()
@@ -376,7 +398,7 @@ def main():
     database_path = list_files(args.db)
     if database_path:
         logging.info("Running HMM searches.")
-        run_hmm(args.input, args.CPU, database_path, args.visualization)
+        run_hmm(args.input, args.CPU, database_path, args.output, args.E, args.domE, args.visualization)
     else:
         logging.error("Database creation failed or was skipped.")
 
