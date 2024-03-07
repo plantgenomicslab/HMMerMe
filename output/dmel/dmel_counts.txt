@@ -1,0 +1,2 @@
+dmel	Proctolin	RYamideLuqin	Prothoracicotropichormone	SIfamide	CCHamide1
+dmel	2	1	4	1	1	
