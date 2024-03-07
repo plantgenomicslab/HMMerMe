@@ -5,7 +5,7 @@
 Install the required tools in a new Conda environment named "HMM" using the following command:
 
 ```bash
-conda create -y -n HMM -c bioconda -c conda-forge python=3.11 seqkit hmmer muscle=3.8.1551 weblogo transdecoder easel diamond trimal pymsaviz
+conda create -y -n HMM -c bioconda -c conda-forge python=3.11 seqkit hmmer muscle=3.8.1551 weblogo transdecoder easel diamond trimal pymsaviz alive-progress
 ```
 
 To activate the newly created environment, execute:
@@ -33,7 +33,19 @@ cd HMMerMe
 
 ## Executing 'HMMerMe'
 
-The main script is `run.py`, which requires two arguments: `--input` for the input directory which includes {species_name}.fasta and `--db` for the database directory which includes {domain_name}.hmm. Optional arguments include `--CPU` to specify the number of cores (default is 2) and `--visualization` to generate data visualizations.
+Usage:
+
+```bash
+python run.py --input [INPUT DIRECTORY] --db [DATABASE DIRECTORY] --output [OPTIONAL: NAME YOUR OUTPUT DIRECTORY] --E [OPTIONAL: E-value FOR SEQUENCE. DEFAULT SET TO 1e-5] --domE [OPTIONAL: E-value FOR DOMAIN. DEFAULT SET TO 1e-10] --CPU [OPTIONAL: NUMBER OF CPU CORES TO UTILIZE. DEFAULT SET TO 2] --logging [OPTIONAL: LOG ALL COMMANDS, INCLUDING SUCCESS AND FAILURE] --visualization [OPTIONAL: CALL WEBLOGO AND PYMSAVIZ]
+```
+
+Sample usage:
+
+```bash
+python run.py --input Input/ --db Database/ --output two_species --E 1e-10 --logging --visualization
+```
+
+The main script is `run.py`, which requires two arguments: `--input` for the input directory which includes {species_name}.fasta and `--db` for the database directory which includes {domain_name}.hmm. Optional arguments include `--CPU` to specify the number of cores (default is 2), `--visualization` to generate data visualizations, `--output` to generate a custom output directory based on users choice, `--E` to specifcy the E-value for sequence search, and `--domE` to specify the E-value for domain searches.
 
 Execute the script as follows:
 
@@ -69,8 +81,8 @@ The analysis generates several types of output files, outlined as follows:
 - `{Species}_{Homology_domain}_muscled_trimal_domain.fa`: Trimmed alignments to remove excessive gaps.
 - `{Species}_{Homology_domain}_muscled_combined_domain.afa`: Combined alignment files.
 - `{Species}_{Homology_domain}_muscled_combined_trimal_domain.afa`: Combined and trimmed alignment files.
-- `{Species}_counts.txt`: Counts of domain genes identified.
-- the `counts.txt`. This file will give you the total amount of Domain genes that were distinguished from your `.hmm_search` file.
+- `{Species}_counts.tab`: Counts of domain genes identified.
+- the `counts.tab`. This file will give you the total amount of Domain genes that were distinguished from your `.hmm_search` file.
   
 | AaegyptiLVPWY | RYamideLuqin | Prothoracicotropichormone | SIfamide | CCHamide1 |
 |---------------|--------------|---------------------------|----------|-----------|
