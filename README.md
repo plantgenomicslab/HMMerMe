@@ -118,7 +118,7 @@ cp {Homology_domain}.hmm ./Database
 cp {Homology_domain}_trimmed.aln ./Database_fasta/{Homology_domain}.fasta
 ```
 **It is essential to ensure that the filenames for both domain and FASTA files are free from spaces or special characters such as "_". Additionally, the names of the domain and FASTA files must match exactly.**
-**{Homology_domain}.hmm need to be in database folder and {Homology_domain}.fasta need to be in `./Database_fasta` folder.
+**{Homology_domain}.hmm need to be in database folder and {Homology_domain}.fasta need to be in `./Database_fasta` folder.**
 
 ## Transcripts input
 At present, our system exclusively supports protein sequences. For those interested in analyzing transcript sequences, we recommend utilizing TransDecoder, available at https://github.com/TransDecoder/TransDecoder/wiki.
