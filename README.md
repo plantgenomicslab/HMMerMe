@@ -45,7 +45,8 @@ Sample usage:
 python run.py --input Input/ --db Database/ --output two_species --E 1e-10 --logging --visualization
 ```
 
-The main script is `run.py`, which requires two arguments: `--input` for the input directory which includes {species_name}.fasta and `--db` for the database directory which includes {domain_name}.hmm. Optional arguments include `--CPU` to specify the number of cores (default is 2), `--visualization` to generate data visualizations, `--output` to generate a custom output directory based on users choice, `--E` to specifcy the E-value for sequence search, and `--domE` to specify the E-value for domain searches.
+The main script is `run.py`, which requires two arguments: `--input` for the input directory which includes {species_name}.fasta. **It is crucial that the filenames for these FASTA files do not contain spaces or special characters like "_".**
+`--db` for the database directory which includes {domain_name}.hmm. Optional arguments include `--CPU` to specify the number of cores (default is 2), `--visualization` to generate data visualizations, `--output` to generate a custom output directory based on users choice, `--E` to specifcy the E-value for sequence search, and `--domE` to specify the E-value for domain searches.
 
 Execute the script as follows:
 
