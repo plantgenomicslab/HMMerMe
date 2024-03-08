@@ -62,7 +62,7 @@ python run.py --input Input/ --db Database/ --visualization
 - An `--output` option for specifying the directory where output files will be stored, defaulting to `output`.
 - A `--CPU` option to set the number of cores used, with a default value of 2.
 - An  `--visualization` option to enable or disable WebLogo generation, which is disabled by default for streamlined analysis.
-
+- '--E' to specifcy the E-value for sequence search, and '--domE' to specify the E-value for domain searches.
 ## Input file
 The required format for input sequences is the FASTA format. The system is designed to accommodate multiple FASTA files in same directory simultaneously.
 For the database, the expected file format is HMM, and similarly, the system supports processing multiple HMM files in same directory concurrently.
