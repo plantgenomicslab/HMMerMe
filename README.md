@@ -45,7 +45,8 @@ Sample usage:
 python run.py --input Input/ --db Database/ --output two_species --E 1e-10 --logging --visualization
 ```
 
-The main script is `run.py`, which requires two arguments: `--input` for the input directory which includes {species_name}.fasta. **It is crucial that the filenames for these FASTA files do not contain spaces or special characters like "_".**
+The main script is `run.py`, which requires two arguments: `--input` for the input directory which includes {species_name}.fasta. **It is crucial that the filenames for these FASTA files do not contain spaces or special characters like "_".** .
+
 `--db` for the database directory which includes {domain_name}.hmm. Optional arguments include `--CPU` to specify the number of cores (default is 2), `--visualization` to generate data visualizations, `--output` to generate a custom output directory based on users choice, `--E` to specifcy the E-value for sequence search, and `--domE` to specify the E-value for domain searches.
 
 Execute the script as follows:
@@ -63,7 +64,7 @@ python run.py --input Input/ --db Database/ --visualization
 - An `--output` option for specifying the directory where output files will be stored, defaulting to `output`.
 - A `--CPU` option to set the number of cores used, with a default value of 2.
 - An  `--visualization` option to enable or disable WebLogo generation, which is disabled by default for streamlined analysis.
-- '--E' to specifcy the E-value for sequence search, and '--domE' to specify the E-value for domain searches.
+- `--E` to specifcy the E-value for sequence search, and `--domE` to specify the E-value for domain searches.
 ## Input file
 The required format for input sequences is the FASTA format. The system is designed to accommodate multiple FASTA files in same directory simultaneously.
 For the database, the expected file format is HMM, and similarly, the system supports processing multiple HMM files in same directory concurrently.
