@@ -47,7 +47,10 @@ python run.py --input Input/ --db Database/ --output two_species --E 1e-10 --log
 
 The main script is `run.py`, which requires two arguments: `--input` for the input directory which includes {species_name}.fasta. **It is crucial that the filenames for these FASTA files do not contain spaces or special characters like "_".** .
 
-`--db` for the database directory which includes {domain_name}.hmm. Optional arguments include `--CPU` to specify the number of cores (default is 2), `--visualization` to generate data visualizations, `--output` to generate a custom output directory based on users choice, `--E` to specifcy the E-value for sequence search, and `--domE` to specify the E-value for domain searches.
+`--db` for the database directory which includes {domain_name}.hmm. Optional arguments include `--CPU` to specify the number of cores (default is 2), `--visualization` to generate data visualizations.
+**It's essential to ensure that the filenames for both domain and FASTA files are free from spaces or special characters such as "_". Additionally, the names of the domain and FASTA files must match exactly.**
+
+`--output` to generate a custom output directory based on users choice, `--E` to specifcy the E-value for sequence search, and `--domE` to specify the E-value for domain searches.
 
 Execute the script as follows:
 
@@ -111,7 +114,11 @@ muscle -in {Homology_domain}.fasta -out {Homology_domain}.aln -clw
 trimal -in {Homology_domain}.aln -out {Homology_domain}_trimmed.aln -gt 0.50 -cons 60
 esl-reformat stockholm {Homology_domain}_trimmed.aln > {Homology_domain}.sto
 hmmbuild {Homology_domain}.hmm {Homology_domain}.sto
+cp {Homology_domain}.hmm ./Database
+cp {Homology_domain}_trimmed.aln ./Database_fasta/{Homology_domain}.fasta
 ```
+**It is essential to ensure that the filenames for both domain and FASTA files are free from spaces or special characters such as "_". Additionally, the names of the domain and FASTA files must match exactly.**
+**{Homology_domain}.hmm need to be in database folder and {Homology_domain}.fasta need to be in `./Database_fasta` folder.
 
 ## Transcripts input
 At present, our system exclusively supports protein sequences. For those interested in analyzing transcript sequences, we recommend utilizing TransDecoder, available at https://github.com/TransDecoder/TransDecoder/wiki.
