@@ -84,7 +84,7 @@ The analysis generates several types of output files, outlined as follows:
 - `{Species}_{Homology_domain}_muscled_combined_domain.afa`: Combined alignment files.
 - `{Species}_{Homology_domain}_muscled_combined_trimal_domain.afa`: Combined and trimmed alignment files.
 - `{Species}_counts.tab`: Counts of domain genes identified.
-- the `counts.tab`. This file will give you the total amount of Domain genes that were distinguished from your `.hmm_search` file.
+- the `counts.tab`. This file will give you the total amount of Domain genes that were distinguished from your `.hmm_search` file. This tab delimited file, you could open in Excel.
   
 | AaegyptiLVPWY | RYamideLuqin | Prothoracicotropichormone | SIfamide | CCHamide1 |
 |---------------|--------------|---------------------------|----------|-----------|
