@@ -354,7 +354,7 @@ def run_hmm(directory, cpu_count, database_path, output, E, dome, visualization)
                             bar()
 
                     pymsaviz_path = os.path.join(species_folder_path, muscle_or_trimal_file)
-                    pymsaviz_name = muscle_or_trimal_file.replace('.afa', '.png')
+                    pymsaviz_name = muscle_or_trimal_file.replace('.afa', '.pdf')
                     output_pymsaviz = os.path.join(species_folder_path, pymsaviz_name)
                     running_weblogo_for_trimal = f'pymsaviz -i {pymsaviz_path} -o {output_pymsaviz} --wrap_length 80 --color_scheme Taylor --show_consensus --show_count'
                     with alive_bar(enrich_print=False) as bar:
